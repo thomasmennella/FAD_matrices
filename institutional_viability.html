@@ -1092,9 +1092,9 @@ function drawMatrix(type,mi,ic,color){
   const W=canvas.width,H=canvas.height,pad=50;
   ctx.clearRect(0,0,W,H);
   const qW=(W-2*pad)/2,qH=(H-2*pad)/2;
-  const fills=[['#f0fdf4','#eef2ff'],['#fffbeb','#fef2f2']];
-  const labels=[['Mission-True Niches 🌱','Mission-Aligned Leaders 🏆'],['Fragile Opportunists ⚠️','Prestige-Driven Empires 👑']];
-  const lColors=[['#059669','#4f46e5'],['#dc2626','#d97706']];
+  const fills=[['#fffbeb','#eef2ff'],['#fef2f2','#f0fdf4']];
+  const labels=[['Prestige-Driven Empires 👑','Mission-Aligned Leaders 🏆'],['Fragile Opportunists ⚠️','Mission-True Niches 🌱']];
+  const lColors=[['#d97706','#4f46e5'],['#dc2626','#059669']];
   for(let r=0;r<2;r++) for(let c=0;c<2;c++){
     ctx.fillStyle=fills[r][c];ctx.fillRect(pad+c*qW,pad+r*qH,qW,qH);
     ctx.fillStyle=lColors[r][c];ctx.font='bold 11px system-ui,sans-serif';
