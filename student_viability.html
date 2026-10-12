@@ -87,6 +87,12 @@
   .state-filter-row label{font-size:13px;font-weight:600;color:#374151}
   .state-select{border:2px solid #e5e7eb;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;color:#374151}
   .state-select:focus{border-color:#4f46e5}
+  /* Quick mode */
+  .quick-banner{background:#7c3aed;color:white;border-radius:12px;padding:16px 20px;margin-bottom:20px;text-align:center}
+  .quick-banner .conf-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.8;margin-bottom:4px}
+  .quick-banner .conf-title{font-size:14px;font-weight:700;line-height:1.4}
+  .divider-or{display:flex;align-items:center;gap:12px;color:#9ca3af;font-size:13px;margin:18px 0}
+  .divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:#e5e7eb}
 </style>
 </head>
 <body>
@@ -121,7 +127,14 @@
       </div>
     </div>
   </div>
-  <button class="btn btn-primary" onclick="startIQ()">Begin Assessment →</button>
+  <button class="btn btn-primary" onclick="startIQ()">Begin Full Assessment (40 questions) →</button>
+  <div class="divider-or">or</div>
+  <div class="quick-banner">
+    <div class="conf-label">⭐ Atlanta AAC&amp;U Conference Presentation</div>
+    <div class="conf-title">Quick Analysis — 6 Questions</div>
+    <div style="font-size:13px;opacity:0.9;margin-top:6px;line-height:1.5">3 reasoning questions + 3 self-assessment questions<br>Results in under 3 minutes</div>
+  </div>
+  <button class="btn btn-primary" style="background:#7c3aed" onclick="startQuick()">Choose This Option for the Conference →</button>
 </div>
 
 <!-- IQ QUESTION -->
@@ -301,17 +314,36 @@ const PROFILES = {
 let iqIdx=0, drIdx=0, iqScore=0, drScore=0, iqLocked=false, drLocked=false;
 let wantsColleges=false;
 let finalType=null;
+let quickMode=false;
+
+// Quick Analysis: indices into IQ_Q and DR_Q to use (3 each, spread across sections)
+const QUICK_IQ=[0,7,14];  // Pattern, Logical, Numerical
+const QUICK_DR=[0,5,12];  // Executive Function, Resilience, Motivation
+let quickIQList=[], quickDRList=[], quickIQIdx=0, quickDRIdx=0;
 
 // ─── CLASSIFICATION ───────────────────────────────────────────────────────────
 function classify(iq,dr){
-  const ip=iq/IQ_Q.length;
-  const dp=dr/(DR_Q.length*4);
+  const iqTotal = quickMode ? QUICK_IQ.length : IQ_Q.length;
+  const drTotal = quickMode ? QUICK_DR.length*4 : DR_Q.length*4;
+  const ip=iq/iqTotal;
+  const dp=dr/drTotal;
   if(ip>=0.85&&dp<=0.38) return'RANDO';
   const hiIQ=ip>=0.55, hiDR=dp>=0.58;
   if(hiIQ&&hiDR) return'Competitor';
   if(hiIQ&&!hiDR) return'Explorer';
   if(!hiIQ&&hiDR) return'Pragmatist';
   return'Aspirant';
+}
+
+// ─── QUICK MODE ──────────────────────────────────────────────────────────────
+function startQuick(){
+  quickMode=true;
+  iqIdx=0; drIdx=0; iqScore=0; drScore=0;
+  quickIQList=QUICK_IQ.map(i=>IQ_Q[i]);
+  quickDRList=QUICK_DR.map(i=>DR_Q[i]);
+  quickIQIdx=0; quickDRIdx=0;
+  showView('view-iq');
+  renderIQ();
 }
 
 // ─── VIEWS ───────────────────────────────────────────────────────────────────
@@ -327,13 +359,18 @@ function showView(id){
 }
 
 // ─── IQ ──────────────────────────────────────────────────────────────────────
-function startIQ(){showView('view-iq');renderIQ();}
+function startIQ(){quickMode=false;showView('view-iq');renderIQ();}
+function currentIQList(){ return quickMode ? quickIQList : IQ_Q; }
+function currentIQIdx(){ return quickMode ? quickIQIdx : iqIdx; }
 function renderIQ(){
   iqLocked=false;
-  const q=IQ_Q[iqIdx];
-  document.getElementById('iq-counter').textContent=`${iqIdx+1}/20`;
-  document.getElementById('iq-bar').style.width=`${(iqIdx/20)*100}%`;
-  document.getElementById('iq-section').textContent=q.sec;
+  const list=currentIQList();
+  const idx=currentIQIdx();
+  const total=list.length;
+  const q=list[idx];
+  document.getElementById('iq-counter').textContent=`${idx+1}/${total}`;
+  document.getElementById('iq-bar').style.width=`${(idx/total)*100}%`;
+  document.getElementById('iq-section').textContent=q.sec+(quickMode?' · Quick Analysis':'');
   document.getElementById('iq-prompt').textContent=q.prompt;
   document.getElementById('iq-feedback').textContent='';
   const cont=document.getElementById('iq-options');
@@ -349,27 +386,32 @@ function renderIQ(){
 function handleIQ(idx,btn){
   if(iqLocked)return;
   iqLocked=true;
-  const q=IQ_Q[iqIdx];
+  const list=currentIQList();
+  const q=list[currentIQIdx()];
   const btns=document.getElementById('iq-options').querySelectorAll('.opt-btn');
   btns[q.ans].classList.add('correct');
   if(idx===q.ans){iqScore++;document.getElementById('iq-feedback').className='feedback ok';document.getElementById('iq-feedback').textContent='✓ Correct';}
   else{btn.classList.add('wrong');document.getElementById('iq-feedback').className='feedback bad';document.getElementById('iq-feedback').textContent=`✗ The correct answer is ${String.fromCharCode(65+q.ans)}`;}
   setTimeout(()=>{
-    iqIdx++;
-    if(iqIdx<IQ_Q.length) renderIQ();
-    else showView('view-transition');
+    if(quickMode){ quickIQIdx++; if(quickIQIdx<quickIQList.length) renderIQ(); else showView('view-transition'); }
+    else { iqIdx++; if(iqIdx<IQ_Q.length) renderIQ(); else showView('view-transition'); }
   },1200);
 }
 
 // ─── DR ──────────────────────────────────────────────────────────────────────
 function startDR(){showView('view-dr');renderDR();}
+function currentDRList(){ return quickMode ? quickDRList : DR_Q; }
+function currentDRIdx(){ return quickMode ? quickDRIdx : drIdx; }
 function renderDR(){
   drLocked=false;
-  const q=DR_Q[drIdx];
-  document.getElementById('dr-counter').textContent=`${drIdx+1}/20`;
-  document.getElementById('dr-bar').style.width=`${(drIdx/20)*100}%`;
+  const list=currentDRList();
+  const idx=currentDRIdx();
+  const total=list.length;
+  const q=list[idx];
+  document.getElementById('dr-counter').textContent=`${idx+1}/${total}`;
+  document.getElementById('dr-bar').style.width=`${(idx/total)*100}%`;
   document.getElementById('dr-bar').style.background='#059669';
-  document.getElementById('dr-section').textContent=q.sec;
+  document.getElementById('dr-section').textContent=q.sec+(quickMode?' · Quick Analysis':'');
   document.getElementById('dr-prompt').textContent=q.prompt;
   const cont=document.getElementById('dr-options');
   cont.innerHTML='';
@@ -385,14 +427,11 @@ function handleDR(idx,btn){
   if(drLocked)return;
   drLocked=true;
   btn.classList.add('selected');
-  drScore+=DR_Q[drIdx].w[idx];
+  const list=currentDRList();
+  drScore+=list[currentDRIdx()].w[idx];
   setTimeout(()=>{
-    drIdx++;
-    if(drIdx<DR_Q.length) renderDR();
-    else {
-      finalType=classify(iqScore,drScore);
-      showView('view-inst-q');
-    }
+    if(quickMode){ quickDRIdx++; if(quickDRIdx<quickDRList.length) renderDR(); else{ finalType=classify(iqScore,drScore); showView('view-inst-q'); } }
+    else { drIdx++; if(drIdx<DR_Q.length) renderDR(); else{ finalType=classify(iqScore,drScore); showView('view-inst-q'); } }
   },300);
 }
 
@@ -407,8 +446,10 @@ function goToResults(wantRecs){
 function buildResults(){
   const type=finalType;
   const p=PROFILES[type];
-  const ip=Math.round((iqScore/IQ_Q.length)*100);
-  const dp=Math.round((drScore/(DR_Q.length*4))*100);
+  const iqTotal=quickMode?QUICK_IQ.length:IQ_Q.length;
+  const drTotal=quickMode?QUICK_DR.length*4:DR_Q.length*4;
+  const ip=Math.round((iqScore/iqTotal)*100);
+  const dp=Math.round((drScore/drTotal)*100);
 
   // Header
   const hdr=document.getElementById('res-header');
@@ -478,11 +519,12 @@ function drawMatrix(type,iqPct,drPct,color){
   const W=canvas.width,H=canvas.height,pad=48;
   ctx.clearRect(0,0,W,H);
   const qW=(W-2*pad)/2,qH=(H-2*pad)/2;
-  // Quadrant fills — note Explorer top-left, Competitor top-right
-  const fills=[['#ecfeff','#eef2ff'],['#f0fdf4','#fef2f2']];
-  // Updated label: "Pragmatist" and "Aspirant"
-  const labels=[['Explorer','Competitor'],['Pragmatist','Aspirant']];
-  const lColors=[['#0891b2','#4f46e5'],['#059669','#dc2626']];
+  // Quadrant fills — top row = high DR, bottom row = low DR
+  // Left col = low IQ, right col = high IQ
+  // top-left=Pragmatist, top-right=Competitor, bottom-left=Aspirant, bottom-right=Explorer
+  const fills=[['#f0fdf4','#eef2ff'],['#fef2f2','#ecfeff']];
+  const labels=[['Pragmatist','Competitor'],['Aspirant','Explorer']];
+  const lColors=[['#059669','#4f46e5'],['#dc2626','#0891b2']];
   for(let r=0;r<2;r++) for(let c=0;c<2;c++){
     ctx.fillStyle=fills[r][c];
     ctx.fillRect(pad+c*qW,pad+r*qH,qW,qH);
@@ -515,6 +557,7 @@ function drawMatrix(type,iqPct,drPct,color){
 
 function retake(){
   iqIdx=0;drIdx=0;iqScore=0;drScore=0;
+  quickIQIdx=0;quickDRIdx=0;quickMode=false;
   finalType=null;wantsColleges=false;
   showView('view-intro');
 }

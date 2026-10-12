@@ -98,7 +98,7 @@ h1{font-size:24px;font-weight:900;color:#1f2937;line-height:1.2}
 <!-- VIEW: INTRO -->
 <div id="view-intro" class="card fade">
   <h2 style="font-size:19px;font-weight:800;color:#1f2937;margin-bottom:12px">About This Assessment</h2>
-  <p style="color:#4b5563;line-height:1.7;margin-bottom:14px">Based on the <em>Student Viability Framework</em> (Chapters 6 & 7), this tool positions your institution on the <strong>Institutional Viability Matrix</strong> — mapping it to one of four Learning Environment archetypes: <strong>Tournament</strong>, <strong>Greenhouse</strong>, <strong>Credentialing</strong>, or <strong>Repair Shop</strong>.</p>
+  <p style="color:#4b5563;line-height:1.7;margin-bottom:14px">Based on the <em>Student Viability Framework</em> (Chapters 6 & 7), this tool positions your institution on the <strong>Institutional Viability Matrix</strong> — mapping it to one of four Learning Environment archetypes: <strong>Mission-Aligned Leaders</strong>, <strong>Prestige-Driven Empires</strong>, <strong>Mission-True Niches</strong>, or <strong>Fragile Opportunists</strong>.</p>
   <p style="color:#4b5563;line-height:1.7;margin-bottom:20px">Search for your institution below. We'll pre-fill what we know and supplement with targeted survey questions across six institutional dimensions.</p>
   <div style="background:#f0f4ff;border:1px solid #c7d2fe;border-radius:12px;padding:16px;margin-bottom:22px">
     <div style="font-weight:700;color:#3730a3;margin-bottom:10px">What you'll receive:</div>
@@ -143,7 +143,18 @@ h1{font-size:24px;font-weight:900;color:#1f2937;line-height:1.2}
     </div>
   </div>
   <div style="margin-top:20px">
-    <button class="btn btn-primary" onclick="beginSurvey()">Begin Survey →</button>
+    <button class="btn btn-primary" onclick="beginSurvey()">Begin Full Assessment (~40 questions) →</button>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+      <div style="flex:1;height:1px;background:#e5e7eb"></div>
+      <span style="font-size:12px;color:#9ca3af;font-weight:600">or</span>
+      <div style="flex:1;height:1px;background:#e5e7eb"></div>
+    </div>
+    <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:18px;margin-bottom:14px;color:white">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.85;margin-bottom:4px">⭐ Atlanta AAC&U Conference Presentation</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:6px">Quick Analysis — 6 Questions</div>
+      <div style="font-size:12px;opacity:0.9;line-height:1.5">One question per institutional dimension · Results in under 3 minutes</div>
+    </div>
+    <button class="btn btn-primary" style="background:#7c3aed" onclick="beginQuick()">Choose This Option for the Conference →</button>
   </div>
 </div>
 
@@ -734,6 +745,22 @@ let currentAnswer=null,allAnswers=[];
 let dimScores={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
 let dimCounts={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
 
+let quickMode=false;
+// One representative question per dimension (indices into SURVEY_SECTIONS[i].questions[j])
+const QUICK_QUESTIONS=[
+  {secIdx:0,qIdx:3,dim:'mission'},   // "Your institution's primary function..."
+  {secIdx:1,qIdx:0,dim:'students'},  // "Academic preparedness of majority..."
+  {secIdx:2,qIdx:0,dim:'rigor'},     // "Dominant cognitive demand..."
+  {secIdx:3,qIdx:0,dim:'capability'},// "Advising model..."
+  {secIdx:4,qIdx:0,dim:'faculty'},   // "Faculty primarily hired and rewarded..."
+  {secIdx:5,qIdx:0,dim:'outcomes'}   // "6-year graduation rate..."
+];
+let quickQuestions=[];
+let quickAnswers=[];
+let quickDimScores={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
+let quickDimCounts={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
+let quickCurrentAnswer=null;
+
 function beginSurvey(){
   if(!selectedInst&&!document.getElementById('inst-search').value.trim()){
     alert('Please enter or select your institution name.');return;
@@ -741,7 +768,113 @@ function beginSurvey(){
   if(!selectedInst){
     selectedInst={name:document.getElementById('inst-search').value.trim(),state:'',type:document.getElementById('inst-type-display').value};
   }
+  quickMode=false;
   showView('view-survey');renderQ();
+}
+
+function beginQuick(){
+  if(!selectedInst&&!document.getElementById('inst-search').value.trim()){
+    alert('Please enter or select your institution name.');return;
+  }
+  if(!selectedInst){
+    selectedInst={name:document.getElementById('inst-search').value.trim(),state:'',type:document.getElementById('inst-type-display').value};
+  }
+  quickMode=true;
+  quickAnswers=[];
+  quickCurrentAnswer=null;
+  Object.keys(quickDimScores).forEach(k=>quickDimScores[k]=0);
+  Object.keys(quickDimCounts).forEach(k=>quickDimCounts[k]=0);
+  quickQuestions=QUICK_QUESTIONS.map(ref=>{
+    const q=JSON.parse(JSON.stringify(SURVEY_SECTIONS[ref.secIdx].questions[ref.qIdx]));
+    q.secLabel=SURVEY_SECTIONS[ref.secIdx].label;
+    return q;
+  });
+  showView('view-survey');renderQQuick();
+}
+
+function renderQQuick(){
+  quickCurrentAnswer=null;
+  const idx=quickAnswers.length;
+  if(idx>=quickQuestions.length){computeResultsQuick();return;}
+  const q=quickQuestions[idx];
+  const total=quickQuestions.length;
+  document.getElementById('survey-phase-lbl').textContent=`Quick Analysis — Question ${idx+1} of ${total}`;
+  document.getElementById('survey-counter').textContent=`Q${idx+1}/${total}`;
+  document.getElementById('survey-bar').style.width=`${(idx/total)*100}%`;
+  document.getElementById('survey-q-section').textContent='⭐ Quick Analysis · '+q.secLabel;
+  document.getElementById('survey-q-prompt').textContent=q.prompt;
+  const body=document.getElementById('survey-q-body');
+  body.innerHTML='';
+  document.getElementById('next-btn').disabled=true;
+  document.getElementById('next-btn').style.opacity='0.4';
+  document.getElementById('next-btn').onclick=advanceSurveyQuick;
+
+  if(q.type==='mc'){
+    const div=document.createElement('div');div.className='opts';
+    q.opts.forEach((opt,i)=>{
+      const b=document.createElement('button');b.className='opt-btn';
+      b.innerHTML=`<span class="opt-letter">${String.fromCharCode(65+i)}.</span>${opt}`;
+      b.onclick=()=>{
+        div.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        quickCurrentAnswer={value:q.w[i],dim:q.dim};
+        enableNext();
+      };
+      div.appendChild(b);
+    });
+    body.appendChild(div);
+  } else if(q.type==='scale'){
+    const wrap=document.createElement('div');
+    const row=document.createElement('div');row.className='scale-row';
+    for(let v=1;v<=5;v++){
+      const b=document.createElement('button');b.className='scale-btn';b.textContent=v;
+      b.onclick=()=>{
+        row.querySelectorAll('.scale-btn').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        quickCurrentAnswer={value:v,dim:q.dim};
+        enableNext();
+      };
+      row.appendChild(b);
+    }
+    const ends=document.createElement('div');ends.className='scale-ends';
+    ends.innerHTML=`<span>${q.low}</span><span>${q.high}</span>`;
+    wrap.appendChild(row);wrap.appendChild(ends);
+    body.appendChild(wrap);
+  }
+}
+
+function advanceSurveyQuick(){
+  if(!quickCurrentAnswer)return;
+  quickAnswers.push(quickCurrentAnswer);
+  quickDimScores[quickCurrentAnswer.dim]=(quickDimScores[quickCurrentAnswer.dim]||0)+quickCurrentAnswer.value;
+  quickDimCounts[quickCurrentAnswer.dim]=(quickDimCounts[quickCurrentAnswer.dim]||0)+1;
+  renderQQuick();
+}
+
+function computeResultsQuick(){
+  const norm={};
+  Object.keys(quickDimScores).forEach(d=>{
+    const max=quickDimCounts[d]*5;
+    norm[d]=max>0?Math.round((quickDimScores[d]/max)*100):50;
+  });
+  let typeBoost={mi:0,ic:0};
+  if(selectedInst&&selectedInst.type){
+    const t=selectedInst.type.toLowerCase();
+    if(t.includes('r1')||t.includes('ivy')) typeBoost={mi:12,ic:10};
+    else if(t.includes('liberal arts')) typeBoost={mi:6,ic:4};
+    else if(t.includes('community college')||t.includes('technical')) typeBoost={mi:-10,ic:-8};
+    else if(t.includes('experimental')) typeBoost={mi:4,ic:-4};
+    else if(t.includes('hbcu')) typeBoost={mi:0,ic:6};
+  }
+  const mi=Math.min(100,Math.max(0,Math.round((norm.rigor+norm.mission+norm.faculty)/3)+typeBoost.mi));
+  const ic=Math.min(100,Math.max(0,Math.round((norm.capability+norm.outcomes+norm.students)/3)+typeBoost.ic));
+  const hiMI=mi>=52,hiIC=ic>=52;
+  let type;
+  if(hiMI&&hiIC) type='MissionAlignedLeaders';
+  else if(hiMI&&!hiIC) type='MissionTrueNiches';
+  else if(!hiMI&&hiIC) type='PrestigeDrivenEmpires';
+  else type='FragileOpportunists';
+  showResults(type,mi,ic,norm);
 }
 
 function renderQ(){
@@ -758,6 +891,7 @@ function renderQ(){
   body.innerHTML='';
   document.getElementById('next-btn').disabled=true;
   document.getElementById('next-btn').style.opacity='0.4';
+  document.getElementById('next-btn').onclick=advanceSurvey;
 
   if(q.type==='mc'){
     const div=document.createElement('div');div.className='opts';
@@ -809,54 +943,90 @@ function advanceSurvey(){
 
 // ─── INSTITUTION PROFILES ────────────────────────────────────────────────────
 const ENV_PROFILES={
-  Tournament:{color:"#4f46e5",bg:"#eef2ff",border:"#818cf8",emoji:"🏆",
-    label:"Tournament Environment",tagline:"High Mission Intensity · High Institutional Capability",
-    desc:"Your institution operates as a Tournament environment: highly selective, research-intensive, and designed to cultivate elite intellectual and professional achievement. You serve high-viability students (Competitors) who arrive with strong cognitive and developmental capital and require challenge, peer competition, and access to elite networks.",
+  MissionAlignedLeaders:{color:"#4f46e5",bg:"#eef2ff",border:"#818cf8",emoji:"🏆",
+    label:"Mission-Aligned Leaders",tagline:"High Mission Intensity · High Institutional Capability",
+    desc:"Your institution operates as a Mission-Aligned Leader: highly selective, research-intensive, and designed to cultivate elite intellectual and professional achievement. You serve high-viability students (Competitors) who arrive with strong cognitive and developmental capital and require challenge, peer competition, and access to elite networks. Mission and capacity are in genuine alignment — a rare and powerful condition.",
     strengths:["Strong selectivity filters ensure mission-aligned student intake","High research intensity drives faculty excellence and student exposure to inquiry","Alumni networks and brand recognition generate compounding student opportunity","Cultural norms of high autonomy and self-direction match Competitor profiles"],
     gaps:["Risk of burnout culture and unsustainable performance pressure","Limited scaffolding for students who slip or face life crises","May under-serve first-generation students admitted without adequate support","Prestige culture can crowd out intrinsic learning with credential-chasing"],
     recs:[
       {title:"Invest in sustainability infrastructure",detail:"High-performing students still face burnout, imposter syndrome, and mental health crises. Build robust, stigma-free wellness systems proportional to your enrollment intensity."},
       {title:"Expand developmental advising for transition students",detail:"Students who arrive strong but encounter unexpected obstacles need more than academic advising — they need developmental support. Train advisors in the language of maturity capital."},
       {title:"Audit teaching quality alongside research output",detail:"Your institution may prioritize research productivity in hiring and promotion while neglecting pedagogical training. Establish teaching quality as a measurable institutional value."},
-      {title:"Develop explicit mobility pathways",detail:"Students who don't thrive in the Tournament environment should have transparent pathways to Greenhouse or Credentialing environments, not just academic penalties."}
+      {title:"Develop explicit mobility pathways",detail:"Students who don't thrive in the Mission-Aligned Leader environment should have transparent pathways to Mission-True Niches or Prestige-Driven Empires, not just academic penalties."}
     ],
-    examples:["Harvard, Stanford, MIT","UC Berkeley, University of Michigan (public)","University of Chicago, Yale, Princeton","Duke, Johns Hopkins, Carnegie Mellon"]},
-  Greenhouse:{color:"#059669",bg:"#f0fdf4",border:"#6ee7b7",emoji:"🌱",
-    label:"Greenhouse Environment",tagline:"High Intellectual Ambition · Developmental Support Infrastructure",
-    desc:"Your institution operates as a Greenhouse: intellectually ambitious but structured for developmental support rather than elite selection. You serve Explorers — students with strong cognitive potential but uneven maturity, unclear vocational identity, or gaps in social and cultural capital. Your core function is cultivation: converting high potential into durable viability.",
-    strengths:["Small class sizes and high faculty contact enable relational pedagogy","Flexible curriculum allows identity formation through disciplinary exploration","Institutional culture tolerates and even celebrates nonlinear development","Strong advising infrastructure bridges academic and developmental needs"],
-    gaps:["Without accountability structures, students may drift without vocational direction","ROI ambiguity creates enrollment pressure as families question career outcomes","Faculty may be trained in content delivery but not developmental advising","Risk of being a 'holding environment' that delays rather than advances mobility"],
+    examples:["Harvard, Stanford, MIT","UC Berkeley, University of Michigan (public)","University of Chicago, Yale, Princeton","Duke, Johns Hopkins, Carnegie Mellon"],
+    pathways:{
+      easy:[
+        {target:"Mission-True Niches",why:"Reducing selectivity while preserving mission clarity is achievable — requires intentional enrollment strategy and expanded developmental support, not a reinvention of identity."},
+        {target:"Prestige-Driven Empires",why:"Loosening mission intensity while building resource infrastructure is the default drift for many elite institutions. It requires active resistance, not significant investment."}
+      ],
+      hard:[
+        {target:"Fragile Opportunists",why:"Falling to low mission and low capability simultaneously would require catastrophic institutional failure — mission collapse, accreditation crisis, or sustained financial hemorrhage."}
+      ]
+    }},
+  MissionTrueNiches:{color:"#059669",bg:"#f0fdf4",border:"#6ee7b7",emoji:"🌱",
+    label:"Mission-True Niches",tagline:"High Mission Integrity · Developing Institutional Capacity",
+    desc:"Your institution operates as a Mission-True Niche: intellectually and ethically clear about what you are, but constrained by resource limitations. You serve Explorers — students with strong cognitive potential but uneven maturity — and you do so with genuine commitment. Your core challenge is not identity but infrastructure: translating mission clarity into the support systems that make it real for students.",
+    strengths:["Deep mission clarity produces coherent institutional culture and community","Faculty often share values and purpose, creating strong relational environments","Small or specialized settings allow personalized attention despite resource limits","Institutional integrity is high — students and faculty believe in what they're doing"],
+    gaps:["Without accountability structures, students may drift without vocational direction","Resource constraints limit advising capacity, mental health services, and career support","ROI ambiguity creates enrollment pressure as families question career outcomes","Risk of being a 'holding environment' that delays rather than advances mobility"],
     recs:[
       {title:"Build structured vocational identity pathways",detail:"Exploration must eventually converge. Build explicit checkpoints (end of year 1, end of year 2) where students articulate vocational hypotheses with advisor support."},
-      {title:"Train faculty in developmental advising",detail:"Greenhouse success depends on faculty who understand maturity capital, not just course content. Invest in faculty development around emerging adulthood and identity formation."},
+      {title:"Train faculty in developmental advising",detail:"Mission-True Niche success depends on faculty who understand maturity capital, not just course content. Invest in faculty development around emerging adulthood and identity formation."},
       {title:"Create accountability without rigidity",detail:"Introduce milestone-based progression that allows flexibility in path while ensuring forward momentum — preventing aimless accumulation of credits without development."},
       {title:"Strengthen career integration from year one",detail:"Explorers need low-stakes exposure to real-world domains early. Build internships, job shadows, and practitioner panels into the first-year experience."}
     ],
-    examples:["Wesleyan, Reed, Oberlin, Sarah Lawrence","Hampshire, Evergreen State, Bennington","Colorado College, Antioch, Warren Wilson","Many liberal arts colleges with strong advising"]},
-  Credentialing:{color:"#d97706",bg:"#fffbeb",border:"#fcd34d",emoji:"🔧",
-    label:"Credentialing Environment",tagline:"Applied Learning · Workforce Alignment · Practical Mastery",
-    desc:"Your institution operates as a Credentialing environment: applied, outcome-focused, and aligned with labor market demands. You serve Pragmatists — students with strong developmental readiness and a pragmatic orientation toward learning. Your core function is workforce preparation: converting real-world motivation into certified, market-relevant competence.",
-    strengths:["Tight alignment between curriculum and employer needs ensures relevance","Short time-to-completion and clear milestones respect student constraints","Mastery-based instruction rewards consistency and follow-through","Strong employer partnerships provide direct pathways to jobs"],
-    gaps:["Limited upward mobility pathways can cap student ambition","Credential inflation threatens the value of programs over time","Part-time adjunct faculty may lack the mentorship capacity Pragmatists need","Stigma as 'second-tier' can undermine student identity and institutional confidence"],
+    examples:["Wesleyan, Reed, Oberlin, Sarah Lawrence","Hampshire, Evergreen State, Bennington","Colorado College, Antioch, Warren Wilson","Many liberal arts colleges with strong advising"],
+    pathways:{
+      easy:[
+        {target:"Mission-Aligned Leaders",why:"If resources can be secured and capability built, the strong mission foundation makes this the natural upward path. Alumni giving, targeted philanthropy, and enrollment growth fund the infrastructure gap."},
+        {target:"Fragile Opportunists",why:"Resource attrition without mission maintenance leads here quickly — declining enrollment, faculty departures, and financial strain can erode both capacity and coherence simultaneously."}
+      ],
+      hard:[
+        {target:"Prestige-Driven Empires",why:"Shifting from high-mission to low-mission while building prestige infrastructure requires abandoning core identity — alienating faculty, alumni, and the students your culture attracts. Rarely intentional; more often a drift through leadership transitions."}
+      ]
+    }},
+  PrestigeDrivenEmpires:{color:"#d97706",bg:"#fffbeb",border:"#fcd34d",emoji:"👑",
+    label:"Prestige-Driven Empires",tagline:"High Institutional Capacity · Mission Ambiguity",
+    desc:"Your institution has accumulated significant capacity — strong support infrastructure, resources, brand recognition — but the mission driving that capacity has become diffuse or externally defined by prestige rather than genuine educational purpose. You serve a range of students competently, but excellence is defined by ranking and credential value rather than transformative learning. The risk is institutional drift: doing many things well without knowing why.",
+    strengths:["Strong resource infrastructure enables high-quality programming across many areas","Brand recognition and prestige networks create genuine student opportunity","Diverse program offerings serve multiple student populations simultaneously","Employer relationships and placement infrastructure are robust"],
+    gaps:["Mission ambiguity creates internal culture fragmentation and purpose drift","Faculty incentives may be misaligned with actual student developmental needs","Resource allocation often follows prestige metrics rather than student need","Risk of becoming a credential factory: efficient but educationally hollow"],
     recs:[
-      {title:"Build stackable credential architecture",detail:"Design programs so students can move from certificate to associate to bachelor's without losing credits. Mobility should be structural, not aspirational."},
-      {title:"Invest in faculty-as-mentor model",detail:"Pragmatists thrive under apprenticeship-style relationships. Prioritize faculty hiring and retention based on mentorship capacity and industry experience, not just credentials."},
-      {title:"Counter stigma with outcome data",detail:"Publish and promote graduate wage data, employment rates, and employer satisfaction scores. Data-driven narrative reframes credentialing as high-ROI, not consolation prize."},
-      {title:"Identify latent Competitors and Explorers",detail:"Some students in your programs have higher cognitive potential than their placement suggests. Build identification mechanisms and transfer pathways for students ready to move upward."}
+      {title:"Clarify and recommit to a core educational mission",detail:"Prestige is a byproduct, not a mission. Convene faculty, administration, and students to articulate what transformation your institution actually intends to produce — and hold that standard against resource allocation."},
+      {title:"Audit curriculum for depth vs. breadth",detail:"Prestige-driven expansion often produces course proliferation without coherence. Map what students actually learn across programs against your stated educational goals."},
+      {title:"Redirect prestige resources toward at-risk populations",detail:"High capacity is wasted if it serves only the students who need the least. Use institutional resources to build genuine developmental infrastructure for first-generation, underprepared, and high-risk students."},
+      {title:"Evaluate faculty reward structures",detail:"If promotion, tenure, and prestige are indexed to research output with no accountability for student development outcomes, teaching quality degrades. Build teaching and mentorship into the reward architecture."}
     ],
-    examples:["Community College of Denver, SNHU, WGU","Wentworth Institute of Technology","Trade/technical colleges and bootcamps","Allied health and vocational certificate programs"]},
-  RepairShop:{color:"#dc2626",bg:"#fef2f2",border:"#fca5a5",emoji:"🏥",
-    label:"Repair Shop Environment",tagline:"Triage · Stabilization · Foundational Reconstruction",
-    desc:"Your institution operates as a Repair Shop: open-access, resource-intensive, and focused on foundational reconstruction for underprepared students. You serve Aspirants who arrive with gaps in cognitive readiness, maturity capital, and often basic life stability. Your core function is triage and recovery — the most difficult and most important mission in the postsecondary system.",
-    strengths:["Open access ethos ensures no student is turned away due to prior failure","Wraparound services address the full ecology of student need","Flexible scheduling accommodates students with work and family obligations","Community-embedded relationships generate trust that elite institutions cannot replicate"],
-    gaps:["Chronic underfunding limits the intensity of support needed for this population","High attrition rates create cycles of false starts and deepening disenchantment","Pressure to pass students without real growth compromises institutional integrity","Faculty burnout is endemic without adequate professional support infrastructure"],
+    examples:["Community College of Denver, SNHU, WGU","Wentworth Institute of Technology","Large regional comprehensive universities with prestige aspirations","Institutions chasing rankings at the expense of mission clarity"],
+    pathways:{
+      easy:[
+        {target:"Mission-Aligned Leaders",why:"Translating existing capacity into genuine mission alignment is achievable with leadership will. Requires internal clarity about purpose and willingness to prioritize educational depth over prestige metrics."},
+        {target:"Fragile Opportunists",why:"If financial pressure forces resource cuts without mission clarification, the institution loses both capacity and direction. A common trajectory for tuition-dependent prestige-seekers in enrollment decline."}
+      ],
+      hard:[
+        {target:"Mission-True Niches",why:"Voluntarily reducing resource intensity and prestige orientation to achieve mission purity requires abandoning major institutional investments and rejecting the market logic the institution has internalized. Extremely rare without external crisis."}
+      ]
+    }},
+  FragileOpportunists:{color:"#dc2626",bg:"#fef2f2",border:"#fca5a5",emoji:"⚠️",
+    label:"Fragile Opportunists",tagline:"Low Mission Intensity · Low Institutional Capability",
+    desc:"Your institution is operating in a high-risk condition: neither mission nor capacity is sufficient to consistently serve students well. Enrollment pressure drives reactive decision-making, mission statements are aspirational fictions, and support infrastructure is chronically under-resourced. Students in this environment are the most vulnerable — they often arrived with the most need and are receiving the least. This placement is an urgent call for strategic action, not a verdict on permanent identity.",
+    strengths:["Open access ethos ensures no student is turned away due to prior failure","Community-embedded relationships generate trust that well-resourced institutions cannot replicate","Flexibility and responsiveness to local workforce needs","Staff often deeply committed to students despite institutional dysfunction"],
+    gaps:["Chronic underfunding limits the intensity of support needed for this population","High attrition rates create cycles of false starts and deepening disenchantment","Pressure to pass students without real growth compromises institutional integrity","Faculty burnout is endemic without adequate professional support infrastructure","Mission drift makes strategic planning incoherent and resource allocation reactive"],
     recs:[
-      {title:"Shift from credit accumulation to capability milestones",detail:"Degrees mean little if foundational skills were never repaired. Build competency-based checkpoints that certify genuine capacity before advancing students into higher-demand courses."},
+      {title:"Conduct an honest mission audit",detail:"Fragile Opportunists often have missions that no longer match their actual student population, programs, or resources. Start with radical honesty: who do you actually serve, and what do you actually offer? Build from there."},
+      {title:"Shift from credit accumulation to capability milestones",detail:"Degrees mean little if foundational skills were never built. Implement competency-based checkpoints that certify genuine capacity before advancing students into higher-demand coursework."},
       {title:"Implement trauma-informed institutional culture",detail:"The population you serve has often experienced systemic failure. Train all staff — not just counselors — in trauma-informed practice and restorative communication."},
-      {title:"Design explicit upward mobility pathways",detail:"Repair Shop is a launchpad, not a destination. Build transparent, supported pathways into Credentialing or Greenhouse environments as students stabilize."},
-      {title:"Advocate vigorously for funding parity",detail:"The students with the greatest need receive the fewest resources. Repair Shop leaders must become institutional advocates for equitable funding models at state and federal levels."}
+      {title:"Advocate vigorously for funding parity",detail:"The students with the greatest need receive the fewest resources. Fragile Opportunist leaders must become institutional advocates for equitable funding models at the state and federal level — and document student outcomes to make the case."}
     ],
-    examples:["Local open-access community colleges","Access-focused regional state universities","Adult basic education programs","Workforce reentry and developmental ed programs"]}
+    examples:["Severely under-resourced open-access community colleges","Access-focused regional state universities facing enrollment collapse","Adult basic education programs with chronic funding instability","Institutions operating under financial exigency or accreditation warning"],
+    pathways:{
+      easy:[
+        {target:"Mission-True Niches",why:"Clarifying and committing to a specific, bounded mission — even with limited resources — is the most achievable first step. It requires leadership will more than financial investment. A focused mission creates coherence that enables better resource use."},
+        {target:"Prestige-Driven Empires",why:"If significant external funding arrives (state investment, federal grants, philanthropy), capacity can be built faster than mission can be clarified. This pathway risks building infrastructure without identity — useful but hollow."}
+      ],
+      hard:[
+        {target:"Mission-Aligned Leaders",why:"This requires simultaneously building mission clarity and institutional capacity — both of which are resource-intensive and time-consuming. Requires sustained investment, strong leadership, and deliberate phased development over 10–15 years minimum."}
+      ]
+    }}
 };
 
 // ─── CLASSIFICATION ───────────────────────────────────────────────────────────
@@ -883,10 +1053,10 @@ function computeResults(){
 
   const hiMI=mi>=52,hiIC=ic>=52;
   let type;
-  if(hiMI&&hiIC) type='Tournament';
-  else if(hiMI&&!hiIC) type='Greenhouse';
-  else if(!hiMI&&hiIC) type='Credentialing';
-  else type='RepairShop';
+  if(hiMI&&hiIC) type='MissionAlignedLeaders';
+  else if(hiMI&&!hiIC) type='MissionTrueNiches';
+  else if(!hiMI&&hiIC) type='PrestigeDrivenEmpires';
+  else type='FragileOpportunists';
 
   showResults(type,mi,ic,norm);
 }
@@ -920,8 +1090,8 @@ function drawMatrix(type,mi,ic,color){
   ctx.clearRect(0,0,W,H);
   const qW=(W-2*pad)/2,qH=(H-2*pad)/2;
   const fills=[['#f0fdf4','#eef2ff'],['#fffbeb','#fef2f2']];
-  const labels=[['Greenhouse 🌱','Tournament 🏆'],['Credentialing 🔧','Repair Shop 🏥']];
-  const lColors=[['#059669','#4f46e5'],['#d97706','#dc2626']];
+  const labels=[['Mission-True Niches 🌱','Mission-Aligned Leaders 🏆'],['Fragile Opportunists ⚠️','Prestige-Driven Empires 👑']];
+  const lColors=[['#059669','#4f46e5'],['#dc2626','#d97706']];
   for(let r=0;r<2;r++) for(let c=0;c<2;c++){
     ctx.fillStyle=fills[r][c];ctx.fillRect(pad+c*qW,pad+r*qH,qW,qH);
     ctx.fillStyle=lColors[r][c];ctx.font='bold 11px system-ui,sans-serif';
@@ -942,12 +1112,13 @@ function drawMatrix(type,mi,ic,color){
   const py=(H-pad)-ic*(H-2*pad);
   ctx.beginPath();ctx.arc(px,py,16,0,Math.PI*2);ctx.fillStyle=color+'33';ctx.fill();
   ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  const ek=Object.keys(ENV_PROFILES).find(k=>ENV_PROFILES[k].color===color)||Object.keys(ENV_PROFILES)[0];
   ctx.font='18px serif';ctx.textAlign='center';
-  ctx.fillText(ENV_PROFILES[Object.keys(ENV_PROFILES).find(k=>ENV_PROFILES[k].color===color)].emoji,px,py-20);
+  ctx.fillText(ENV_PROFILES[ek].emoji,px,py-20);
 }
 
 function buildTabs(type,mi,ic,norm,p){
-  const tabs=[{id:'overview',label:'📋 Overview'},{id:'dimensions',label:'📊 Dimensions'},{id:'gaps',label:'⚠️ Gaps'},{id:'recs',label:'🎯 Recommendations'}];
+  const tabs=[{id:'overview',label:'📋 Overview'},{id:'dimensions',label:'📊 Dimensions'},{id:'gaps',label:'⚠️ Gaps'},{id:'recs',label:'🎯 Recommendations'},{id:'pathways',label:'🗺️ Pathways'}];
   const tabRow=document.getElementById('res-tabs');
   tabRow.innerHTML='';
   tabs.forEach((t,i)=>{
@@ -1029,8 +1200,45 @@ function renderTabContent(id,type,mi,ic,norm,p){
       </div>`;
     });
     html+='</div>';
-    const nextEnv=type==='RepairShop'?'Credentialing':type==='Greenhouse'?'Tournament':type==='Credentialing'?'Greenhouse':null;
-    if(nextEnv) html+=`<div class="alert-box alert-blue"><strong>Upward Mobility Path:</strong> As your institution develops greater capability and mission clarity, the natural next environment archetype to target is <strong>${nextEnv}</strong>. This requires intentional investment in the dimension gaps highlighted above — not cosmetic rebranding.</div>`;
+    html+=`<div class="alert-box alert-blue"><strong>See Pathways tab</strong> for analysis of which transitions toward other learning environments are achievable vs. structurally difficult from your current position.</div>`;
+    panel.innerHTML=html;
+  }
+  else if(id==='pathways'){
+    const allLabels={MissionAlignedLeaders:'Mission-Aligned Leaders',MissionTrueNiches:'Mission-True Niches',PrestigeDrivenEmpires:'Prestige-Driven Empires',FragileOpportunists:'Fragile Opportunists'};
+    const allColors={MissionAlignedLeaders:'#4f46e5',MissionTrueNiches:'#059669',PrestigeDrivenEmpires:'#d97706',FragileOpportunists:'#dc2626'};
+    const allEmoji={MissionAlignedLeaders:'🏆',MissionTrueNiches:'🌱',PrestigeDrivenEmpires:'👑',FragileOpportunists:'⚠️'};
+    let html=`<div class="section-card">
+      <h3>🗺️ Transition Pathways from ${p.label}</h3>
+      <p style="margin-bottom:16px;font-size:13px;color:#6b7280">Not all moves across the Institutional Viability Matrix are equally achievable. Below is an honest assessment of which transitions are structurally accessible from your current position — and which require overcoming deep institutional inertia.</p>`;
+
+    if(p.pathways&&p.pathways.easy&&p.pathways.easy.length){
+      html+=`<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#059669;margin-bottom:10px">✅ More Achievable Transitions</div>`;
+      p.pathways.easy.forEach(path=>{
+        const tc=allColors[path.target]||'#374151';
+        const te=allEmoji[path.target]||'';
+        const tl=allLabels[path.target]||path.target;
+        html+=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px;margin-bottom:10px">
+          <div style="font-weight:700;color:${tc};font-size:14px;margin-bottom:6px">${te} → ${tl}</div>
+          <p style="font-size:13px;color:#4b5563;line-height:1.6;margin:0">${path.why}</p>
+        </div>`;
+      });
+      html+='</div>';
+    }
+    if(p.pathways&&p.pathways.hard&&p.pathways.hard.length){
+      html+=`<div><div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#dc2626;margin-bottom:10px">⛔ More Difficult Transitions</div>`;
+      p.pathways.hard.forEach(path=>{
+        const tc=allColors[path.target]||'#374151';
+        const te=allEmoji[path.target]||'';
+        const tl=allLabels[path.target]||path.target;
+        html+=`<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:14px 16px;margin-bottom:10px">
+          <div style="font-weight:700;color:${tc};font-size:14px;margin-bottom:6px">${te} → ${tl}</div>
+          <p style="font-size:13px;color:#4b5563;line-height:1.6;margin:0">${path.why}</p>
+        </div>`;
+      });
+      html+='</div>';
+    }
+    html+=`</div>
+    <div class="alert-box alert-yellow"><strong>A note on categorization:</strong> This placement reflects your institution's <em>current</em> developmental state — not a permanent verdict. Institutions evolve. Use this as a starting point for honest internal dialogue, not a fixed identity.</div>`;
     panel.innerHTML=html;
   }
 }
@@ -1047,9 +1255,13 @@ function showView(id){
 
 function retake(){
   selectedInst=null;stateFilter='';
+  quickMode=false;
   allAnswers=[];currentAnswer=null;
+  quickAnswers=[];quickCurrentAnswer=null;
   Object.keys(dimScores).forEach(k=>dimScores[k]=0);
   Object.keys(dimCounts).forEach(k=>dimCounts[k]=0);
+  Object.keys(quickDimScores).forEach(k=>quickDimScores[k]=0);
+  Object.keys(quickDimCounts).forEach(k=>quickDimCounts[k]=0);
   document.getElementById('inst-search').value='';
   document.getElementById('inst-role').value='';
   document.getElementById('inst-type-display').value='';
