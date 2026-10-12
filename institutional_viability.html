@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Institutional Viability Assessment</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:linear-gradient(135deg,#f0f4ff 0%,#e8f5e9 100%);padding:20px 16px;font-family:system-ui,-apple-system,sans-serif}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeIn 0.45s ease}
+.card{background:white;border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:720px;margin:0 auto}
+.header{text-align:center;margin-bottom:24px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:24px;font-weight:900;color:#1f2937;line-height:1.2}
+.subhead{color:#6b7280;font-size:14px;margin-top:6px}
+.input-group{margin-bottom:18px}
+.input-group label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:6px}
+.input-group input,.input-group select{width:100%;border:2px solid #e5e7eb;border-radius:10px;padding:12px 14px;font-size:15px;outline:none;transition:border 0.2s;font-family:inherit;background:white;color:#374151}
+.input-group input:focus,.input-group select:focus{border-color:#4f46e5}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px}
+.prog-track{background:#e5e7eb;border-radius:999px;height:7px;margin-bottom:20px}
+.prog-fill{border-radius:999px;height:7px;transition:width 0.35s}
+.btn{border:none;border-radius:12px;padding:13px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
+.btn:hover{opacity:0.87}
+.btn-primary{background:#1d4ed8;color:white;width:100%;padding:15px}
+.btn-ghost{background:white;border:2px solid #e5e7eb;color:#6b7280;font-size:13px;padding:10px 22px}
+/* Autocomplete */
+.autocomplete-wrap{position:relative}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:white;border:2px solid #4f46e5;border-top:none;border-radius:0 0 10px 10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 20px rgba(0,0,0,0.12)}
+.autocomplete-list .ac-item{padding:10px 14px;cursor:pointer;font-size:14px;color:#374151;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center}
+.autocomplete-list .ac-item:hover{background:#eef2ff}
+.autocomplete-list .ac-item:last-child{border-bottom:none}
+.ac-state{font-size:11px;color:#9ca3af;font-weight:600;flex-shrink:0;margin-left:8px}
+/* State filter */
+.filter-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.filter-row label{font-size:13px;font-weight:600;color:#374151;white-space:nowrap}
+.filter-row select{border:2px solid #e5e7eb;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;color:#374151;background:white}
+.filter-row select:focus{border-color:#4f46e5}
+.result-count{font-size:12px;color:#6b7280}
+/* Survey */
+.q-section-label{font-size:11px;font-weight:700;letter-spacing:1px;color:#6b7280;text-transform:uppercase;margin-bottom:6px}
+.q-prompt{font-size:16px;font-weight:600;color:#1f2937;margin-bottom:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt-btn{background:#f9fafb;border:2px solid #e5e7eb;border-radius:10px;padding:11px 15px;text-align:left;cursor:pointer;color:#374151;font-size:14px;transition:all 0.18s;font-family:inherit}
+.opt-btn:hover{background:#ede9fe;border-color:#7c3aed}
+.opt-btn.sel{background:#ede9fe;border-color:#7c3aed;color:#4c1d95;font-weight:600}
+.opt-letter{margin-right:9px;opacity:0.45;font-size:13px}
+.scale-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.scale-btn{width:44px;height:44px;border:2px solid #e5e7eb;border-radius:8px;background:#f9fafb;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;color:#374151}
+.scale-btn:hover{border-color:#4f46e5;background:#eef2ff}
+.scale-btn.sel{background:#4f46e5;border-color:#4f46e5;color:white}
+.scale-ends{display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;margin-top:4px}
+.next-btn-row{margin-top:20px;display:flex;justify-content:flex-end}
+/* Results */
+.res-header{border-radius:16px;padding:24px;text-align:center;margin-bottom:18px}
+.res-emoji{font-size:48px;margin-bottom:8px}
+.res-type{font-size:26px;font-weight:800;margin-bottom:4px}
+.res-tagline{font-size:13px;color:#6b7280;margin-bottom:16px}
+.res-scores{display:flex;justify-content:center;gap:24px}
+.score-item{text-align:center}
+.score-val{font-size:22px;font-weight:800}
+.score-lbl{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px}
+.score-div{width:1px;background:#e5e7eb}
+.tab-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:110px;padding:10px 6px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:12px;transition:all 0.2s;font-family:inherit}
+.tab-btn.inactive{background:#f3f4f6;color:#6b7280}
+.section-card{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:18px;margin-bottom:12px}
+.section-card h3{font-weight:700;color:#374151;margin-bottom:8px;font-size:15px}
+.section-card p,.section-card li{color:#4b5563;font-size:14px;line-height:1.65}
+.section-card ul{padding-left:18px}
+.section-card li{margin-bottom:5px}
+.alert-box{border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:13px;line-height:1.6}
+.alert-green{background:#f0fdf4;border:1px solid #86efac;color:#166534}
+.alert-yellow{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert-red{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+.alert-blue{background:#eff6ff;border:1px solid #93c5fd;color:#1e40af}
+.gap-bar-wrap{margin:8px 0}
+.gap-label{font-size:12px;color:#6b7280;margin-bottom:3px;display:flex;justify-content:space-between}
+.gap-track{background:#e5e7eb;border-radius:4px;height:8px}
+.gap-fill{border-radius:4px;height:8px;transition:width 0.5s}
+.priority-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.priority-item:last-child{border-bottom:none}
+.priority-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
+.retake-row{text-align:center;margin-top:20px;padding-bottom:10px}
+.inst-chip{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;margin:2px}
+</style>
+</head>
+<body>
+
+<div class="header fade">
+  <div class="eyebrow">Institutional Viability Framework</div>
+  <h1>Institutional Self-Assessment</h1>
+  <p class="subhead">Assess your institution's alignment with the four Learning Environment archetypes</p>
+</div>
+
+<!-- VIEW: INTRO -->
+<div id="view-intro" class="card fade">
+  <h2 style="font-size:19px;font-weight:800;color:#1f2937;margin-bottom:12px">About This Assessment</h2>
+  <p style="color:#4b5563;line-height:1.7;margin-bottom:14px">Based on the <em>Student Viability Framework</em> (Chapters 6 & 7), this tool positions your institution on the <strong>Institutional Viability Matrix</strong> — mapping it to one of four Learning Environment archetypes: <strong>Tournament</strong>, <strong>Greenhouse</strong>, <strong>Credentialing</strong>, or <strong>Repair Shop</strong>.</p>
+  <p style="color:#4b5563;line-height:1.7;margin-bottom:20px">Search for your institution below. We'll pre-fill what we know and supplement with targeted survey questions across six institutional dimensions.</p>
+  <div style="background:#f0f4ff;border:1px solid #c7d2fe;border-radius:12px;padding:16px;margin-bottom:22px">
+    <div style="font-weight:700;color:#3730a3;margin-bottom:10px">What you'll receive:</div>
+    <ul style="padding-left:18px;color:#4b5563;font-size:14px">
+      <li style="margin-bottom:5px">Placement on the Institutional Viability Matrix</li>
+      <li style="margin-bottom:5px">Alignment score across six institutional dimensions</li>
+      <li style="margin-bottom:5px">Identification of mission-reality gaps</li>
+      <li style="margin-bottom:5px">Prioritized recommendations for institutional improvement</li>
+    </ul>
+  </div>
+
+  <!-- State filter -->
+  <div class="filter-row" style="margin-bottom:14px">
+    <label for="state-filter">Filter institutions by state:</label>
+    <select id="state-filter" onchange="filterByState()">
+      <option value="">All States</option>
+    </select>
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <div class="input-group">
+    <label for="inst-search">Institution Name</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="inst-search" placeholder="Start typing your institution's name…" autocomplete="off" oninput="onInstSearch()" onfocus="onInstSearch()"/>
+      <div id="ac-list" class="autocomplete-list" style="display:none"></div>
+    </div>
+  </div>
+  <div id="inst-selected-display" style="display:none;margin-bottom:16px">
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 16px;font-size:14px;color:#166534">
+      <strong>✓ Selected:</strong> <span id="inst-selected-name"></span> <span id="inst-selected-state" style="color:#9ca3af;font-size:12px"></span>
+      <button onclick="clearInst()" style="float:right;background:none;border:none;cursor:pointer;color:#6b7280;font-size:12px;font-family:inherit">✕ Change</button>
+    </div>
+  </div>
+  <div class="input-row">
+    <div class="input-group" style="margin-bottom:0">
+      <label for="inst-role">Your Role</label>
+      <input type="text" id="inst-role" placeholder="e.g., Provost, Dean, VP…"/>
+    </div>
+    <div class="input-group" style="margin-bottom:0">
+      <label for="inst-type-display">Institution Type</label>
+      <input type="text" id="inst-type-display" placeholder="Auto-filled or enter manually…"/>
+    </div>
+  </div>
+  <div style="margin-top:20px">
+    <button class="btn btn-primary" onclick="beginSurvey()">Begin Survey →</button>
+  </div>
+</div>
+
+<!-- VIEW: SURVEY -->
+<div id="view-survey" class="card fade" style="display:none">
+  <div class="prog-label">
+    <span id="survey-phase-lbl">Section 1 of 6</span>
+    <span id="survey-counter">Q1/40</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="survey-bar" style="width:0%;background:#1d4ed8"></div></div>
+  <div id="survey-q-section" class="q-section-label"></div>
+  <div id="survey-q-prompt" class="q-prompt"></div>
+  <div id="survey-q-body"></div>
+  <div class="next-btn-row"><button class="btn" id="next-btn" style="background:#1d4ed8;color:white;padding:11px 28px" onclick="advanceSurvey()">Next →</button></div>
+</div>
+
+<!-- VIEW: RESULTS -->
+<div id="view-results" style="display:none;max-width:720px;margin:0 auto" class="fade">
+  <div id="res-header" class="res-header"></div>
+  <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:18px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px">Position on the Institutional Viability Matrix</div>
+    <canvas id="matrix-canvas" width="640" height="230" style="max-width:100%;border-radius:8px"></canvas>
+  </div>
+  <div class="tab-row" id="res-tabs"></div>
+  <div id="res-panel"></div>
+  <div class="retake-row">
+    <button class="btn btn-ghost" onclick="retake()">↩ Start Over</button>
+  </div>
+</div>
+
+<script>
+// ─── NATIONAL INSTITUTION DATABASE ────────────────────────────────────────────
+// ~300 institutions spanning all 50 states + DC, all Carnegie types
+const INSTITUTIONS = [
+  // ALABAMA
+  {name:"University of Alabama",state:"AL",type:"R1 Research University (Public)"},
+  {name:"Auburn University",state:"AL",type:"R1 Research University (Public)"},
+  {name:"Alabama A&M University",state:"AL",type:"HBCU / Regional University"},
+  {name:"Tuskegee University",state:"AL",type:"HBCU / Private University"},
+  {name:"Samford University",state:"AL",type:"Private Liberal Arts University"},
+  {name:"Wallace State Community College",state:"AL",type:"Community College"},
+  // ALASKA
+  {name:"University of Alaska Fairbanks",state:"AK",type:"R2 Research University (Public)"},
+  {name:"University of Alaska Anchorage",state:"AK",type:"Regional University (Public)"},
+  // ARIZONA
+  {name:"Arizona State University",state:"AZ",type:"R1 Research University (Public)"},
+  {name:"University of Arizona",state:"AZ",type:"R1 Research University (Public)"},
+  {name:"Northern Arizona University",state:"AZ",type:"Regional University (Public)"},
+  {name:"Grand Canyon University",state:"AZ",type:"Private For-Profit University"},
+  {name:"Maricopa Community Colleges",state:"AZ",type:"Community College System"},
+  {name:"Cochise College",state:"AZ",type:"Community College"},
+  // ARKANSAS
+  {name:"University of Arkansas",state:"AR",type:"R1 Research University (Public)"},
+  {name:"Arkansas State University",state:"AR",type:"Regional University (Public)"},
+  {name:"Philander Smith College",state:"AR",type:"HBCU / Private Liberal Arts"},
+  // CALIFORNIA
+  {name:"University of California, Berkeley",state:"CA",type:"R1 Research University (Public)"},
+  {name:"University of California, Los Angeles",state:"CA",type:"R1 Research University (Public)"},
+  {name:"University of California, San Diego",state:"CA",type:"R1 Research University (Public)"},
+  {name:"Stanford University",state:"CA",type:"R1 Research University (Private)"},
+  {name:"California Institute of Technology (Caltech)",state:"CA",type:"R1 Research University (Private)"},
+  {name:"University of Southern California",state:"CA",type:"R1 Research University (Private)"},
+  {name:"San Francisco State University",state:"CA",type:"Regional University (Public)"},
+  {name:"California State University, Long Beach",state:"CA",type:"Regional University (Public)"},
+  {name:"Pomona College",state:"CA",type:"Liberal Arts College"},
+  {name:"Claremont McKenna College",state:"CA",type:"Liberal Arts College"},
+  {name:"Harvey Mudd College",state:"CA",type:"STEM Liberal Arts College"},
+  {name:"Pitzer College",state:"CA",type:"Liberal Arts College"},
+  {name:"Scripps College",state:"CA",type:"Liberal Arts College"},
+  {name:"Occidental College",state:"CA",type:"Liberal Arts College"},
+  {name:"Santa Monica College",state:"CA",type:"Community College"},
+  {name:"De Anza College",state:"CA",type:"Community College"},
+  {name:"Mount Saint Mary's University",state:"CA",type:"Private Teaching University"},
+  {name:"Loyola Marymount University",state:"CA",type:"Private Research University"},
+  {name:"University of San Francisco",state:"CA",type:"Private Research University"},
+  {name:"Dominican University of California",state:"CA",type:"Private Liberal Arts"},
+  {name:"Fresno Pacific University",state:"CA",type:"Private Teaching University"},
+  // COLORADO
+  {name:"University of Colorado Boulder",state:"CO",type:"R1 Research University (Public)"},
+  {name:"Colorado State University",state:"CO",type:"R1 Research University (Public)"},
+  {name:"University of Denver",state:"CO",type:"R2 Research University (Private)"},
+  {name:"Colorado College",state:"CO",type:"Liberal Arts College"},
+  {name:"Community College of Denver",state:"CO",type:"Community College"},
+  {name:"Aims Community College",state:"CO",type:"Community College"},
+  // CONNECTICUT
+  {name:"Yale University",state:"CT",type:"R1 Research University (Private / Ivy)"},
+  {name:"University of Connecticut",state:"CT",type:"R1 Research University (Public)"},
+  {name:"Trinity College",state:"CT",type:"Liberal Arts College"},
+  {name:"Wesleyan University",state:"CT",type:"Liberal Arts College"},
+  {name:"Connecticut College",state:"CT",type:"Liberal Arts College"},
+  {name:"Quinnipiac University",state:"CT",type:"Private Teaching University"},
+  {name:"Sacred Heart University",state:"CT",type:"Private Teaching University"},
+  {name:"Gateway Community College",state:"CT",type:"Community College"},
+  // DELAWARE
+  {name:"University of Delaware",state:"DE",type:"R1 Research University (Public)"},
+  {name:"Delaware State University",state:"DE",type:"HBCU / Regional University (Public)"},
+  // DC
+  {name:"Georgetown University",state:"DC",type:"R1 Research University (Private)"},
+  {name:"George Washington University",state:"DC",type:"R1 Research University (Private)"},
+  {name:"Howard University",state:"DC",type:"HBCU / Research University (Private)"},
+  {name:"American University",state:"DC",type:"R2 Research University (Private)"},
+  {name:"Gallaudet University",state:"DC",type:"Specialized University"},
+  // FLORIDA
+  {name:"University of Florida",state:"FL",type:"R1 Research University (Public)"},
+  {name:"Florida State University",state:"FL",type:"R1 Research University (Public)"},
+  {name:"University of Miami",state:"FL",type:"R1 Research University (Private)"},
+  {name:"University of Central Florida",state:"FL",type:"R1 Research University (Public)"},
+  {name:"Florida A&M University",state:"FL",type:"HBCU / Regional University (Public)"},
+  {name:"New College of Florida",state:"FL",type:"Public Liberal Arts College"},
+  {name:"St. Petersburg College",state:"FL",type:"Community College"},
+  {name:"Miami Dade College",state:"FL",type:"Community College"},
+  // GEORGIA
+  {name:"Georgia Institute of Technology",state:"GA",type:"R1 Research University (Public)"},
+  {name:"University of Georgia",state:"GA",type:"R1 Research University (Public)"},
+  {name:"Emory University",state:"GA",type:"R1 Research University (Private)"},
+  {name:"Spelman College",state:"GA",type:"HBCU / Liberal Arts College"},
+  {name:"Morehouse College",state:"GA",type:"HBCU / Liberal Arts College"},
+  {name:"Clark Atlanta University",state:"GA",type:"HBCU / University"},
+  {name:"Agnes Scott College",state:"GA",type:"Liberal Arts College"},
+  {name:"Georgia State University",state:"GA",type:"R1 Research University (Public)"},
+  {name:"Kennesaw State University",state:"GA",type:"Regional University (Public)"},
+  {name:"Georgia Piedmont Technical College",state:"GA",type:"Technical College"},
+  // HAWAII
+  {name:"University of Hawaii at Manoa",state:"HI",type:"R1 Research University (Public)"},
+  {name:"Honolulu Community College",state:"HI",type:"Community College"},
+  // IDAHO
+  {name:"University of Idaho",state:"ID",type:"R2 Research University (Public)"},
+  {name:"Boise State University",state:"ID",type:"R2 Research University (Public)"},
+  {name:"College of Southern Idaho",state:"ID",type:"Community College"},
+  // ILLINOIS
+  {name:"University of Chicago",state:"IL",type:"R1 Research University (Private)"},
+  {name:"Northwestern University",state:"IL",type:"R1 Research University (Private)"},
+  {name:"University of Illinois Urbana-Champaign",state:"IL",type:"R1 Research University (Public)"},
+  {name:"University of Illinois Chicago",state:"IL",type:"R1 Research University (Public)"},
+  {name:"Illinois State University",state:"IL",type:"Regional University (Public)"},
+  {name:"DePaul University",state:"IL",type:"R2 Research University (Private)"},
+  {name:"Loyola University Chicago",state:"IL",type:"R2 Research University (Private)"},
+  {name:"Lake Forest College",state:"IL",type:"Liberal Arts College"},
+  {name:"Knox College",state:"IL",type:"Liberal Arts College"},
+  {name:"City Colleges of Chicago",state:"IL",type:"Community College System"},
+  {name:"Illinois Valley Community College",state:"IL",type:"Community College"},
+  // INDIANA
+  {name:"Indiana University Bloomington",state:"IN",type:"R1 Research University (Public)"},
+  {name:"Purdue University",state:"IN",type:"R1 Research University (Public)"},
+  {name:"University of Notre Dame",state:"IN",type:"R1 Research University (Private)"},
+  {name:"Butler University",state:"IN",type:"Private Teaching University"},
+  {name:"Wabash College",state:"IN",type:"Liberal Arts College"},
+  {name:"Ivy Tech Community College",state:"IN",type:"Community College"},
+  // IOWA
+  {name:"University of Iowa",state:"IA",type:"R1 Research University (Public)"},
+  {name:"Iowa State University",state:"IA",type:"R1 Research University (Public)"},
+  {name:"Grinnell College",state:"IA",type:"Liberal Arts College"},
+  {name:"Des Moines Area Community College",state:"IA",type:"Community College"},
+  // KANSAS
+  {name:"University of Kansas",state:"KS",type:"R1 Research University (Public)"},
+  {name:"Kansas State University",state:"KS",type:"R1 Research University (Public)"},
+  {name:"Washburn University",state:"KS",type:"Regional University (Public)"},
+  // KENTUCKY
+  {name:"University of Kentucky",state:"KY",type:"R1 Research University (Public)"},
+  {name:"University of Louisville",state:"KY",type:"R1 Research University (Public)"},
+  {name:"Berea College",state:"KY",type:"Liberal Arts College"},
+  {name:"Jefferson Community & Technical College",state:"KY",type:"Community College"},
+  // LOUISIANA
+  {name:"Louisiana State University",state:"LA",type:"R1 Research University (Public)"},
+  {name:"Tulane University",state:"LA",type:"R1 Research University (Private)"},
+  {name:"Grambling State University",state:"LA",type:"HBCU / Regional University (Public)"},
+  {name:"Southern University Baton Rouge",state:"LA",type:"HBCU / Regional University (Public)"},
+  {name:"Delgado Community College",state:"LA",type:"Community College"},
+  // MAINE
+  {name:"University of Maine",state:"ME",type:"R2 Research University (Public)"},
+  {name:"Bowdoin College",state:"ME",type:"Liberal Arts College"},
+  {name:"Colby College",state:"ME",type:"Liberal Arts College"},
+  {name:"Bates College",state:"ME",type:"Liberal Arts College"},
+  {name:"Southern Maine Community College",state:"ME",type:"Community College"},
+  // MARYLAND
+  {name:"Johns Hopkins University",state:"MD",type:"R1 Research University (Private)"},
+  {name:"University of Maryland College Park",state:"MD",type:"R1 Research University (Public)"},
+  {name:"Morgan State University",state:"MD",type:"HBCU / Research University (Public)"},
+  {name:"St. John's College (Annapolis)",state:"MD",type:"Liberal Arts / Great Books College"},
+  {name:"Goucher College",state:"MD",type:"Liberal Arts College"},
+  {name:"Prince George's Community College",state:"MD",type:"Community College"},
+  // MASSACHUSETTS
+  {name:"Massachusetts Institute of Technology",state:"MA",type:"R1 Research University (Private)"},
+  {name:"Harvard University",state:"MA",type:"R1 Research University (Private / Ivy)"},
+  {name:"Boston University",state:"MA",type:"R1 Research University (Private)"},
+  {name:"Tufts University",state:"MA",type:"R1 Research University (Private)"},
+  {name:"Northeastern University",state:"MA",type:"R1 Research University (Private)"},
+  {name:"University of Massachusetts Amherst",state:"MA",type:"R1 Research University (Public)"},
+  {name:"Williams College",state:"MA",type:"Liberal Arts College"},
+  {name:"Amherst College",state:"MA",type:"Liberal Arts College"},
+  {name:"Smith College",state:"MA",type:"Liberal Arts College"},
+  {name:"Mount Holyoke College",state:"MA",type:"Liberal Arts College"},
+  {name:"Wellesley College",state:"MA",type:"Liberal Arts College"},
+  {name:"Hampshire College",state:"MA",type:"Experimental Liberal Arts College"},
+  {name:"Worcester Polytechnic Institute",state:"MA",type:"Private Technical University"},
+  {name:"Clark University",state:"MA",type:"R2 Research University (Private)"},
+  {name:"Western New England University",state:"MA",type:"Private Teaching University"},
+  {name:"Bay Path University",state:"MA",type:"Private Teaching University"},
+  {name:"Springfield College",state:"MA",type:"Private Teaching University"},
+  {name:"Assumption University",state:"MA",type:"Private Teaching University"},
+  {name:"Merrimack College",state:"MA",type:"Private Teaching University"},
+  {name:"Stonehill College",state:"MA",type:"Private Liberal Arts"},
+  {name:"Suffolk University",state:"MA",type:"Private Teaching University"},
+  {name:"Curry College",state:"MA",type:"Private Teaching University"},
+  {name:"Lasell University",state:"MA",type:"Private Teaching University"},
+  {name:"Emmanuel College",state:"MA",type:"Private Liberal Arts"},
+  {name:"Elms College",state:"MA",type:"Private Liberal Arts"},
+  {name:"Endicott College",state:"MA",type:"Private Teaching University"},
+  {name:"Berkshire Community College",state:"MA",type:"Community College"},
+  {name:"Bunker Hill Community College",state:"MA",type:"Community College"},
+  {name:"Quinsigamond Community College",state:"MA",type:"Community College"},
+  // MICHIGAN
+  {name:"University of Michigan",state:"MI",type:"R1 Research University (Public)"},
+  {name:"Michigan State University",state:"MI",type:"R1 Research University (Public)"},
+  {name:"Wayne State University",state:"MI",type:"R1 Research University (Public)"},
+  {name:"Kalamazoo College",state:"MI",type:"Liberal Arts College"},
+  {name:"Albion College",state:"MI",type:"Liberal Arts College"},
+  {name:"Hope College",state:"MI",type:"Liberal Arts College"},
+  {name:"Macomb Community College",state:"MI",type:"Community College"},
+  {name:"Henry Ford College",state:"MI",type:"Community College"},
+  // MINNESOTA
+  {name:"University of Minnesota Twin Cities",state:"MN",type:"R1 Research University (Public)"},
+  {name:"Carleton College",state:"MN",type:"Liberal Arts College"},
+  {name:"Macalester College",state:"MN",type:"Liberal Arts College"},
+  {name:"St. Olaf College",state:"MN",type:"Liberal Arts College"},
+  {name:"Minneapolis Community & Technical College",state:"MN",type:"Community College"},
+  // MISSISSIPPI
+  {name:"University of Mississippi",state:"MS",type:"R1 Research University (Public)"},
+  {name:"Mississippi State University",state:"MS",type:"R1 Research University (Public)"},
+  {name:"Jackson State University",state:"MS",type:"HBCU / Regional University (Public)"},
+  {name:"Alcorn State University",state:"MS",type:"HBCU / Regional University (Public)"},
+  {name:"Hinds Community College",state:"MS",type:"Community College"},
+  // MISSOURI
+  {name:"Washington University in St. Louis",state:"MO",type:"R1 Research University (Private)"},
+  {name:"University of Missouri",state:"MO",type:"R1 Research University (Public)"},
+  {name:"Saint Louis University",state:"MO",type:"R2 Research University (Private)"},
+  {name:"Stephens College",state:"MO",type:"Private Liberal Arts"},
+  {name:"State Fair Community College",state:"MO",type:"Community College"},
+  // MONTANA
+  {name:"University of Montana",state:"MT",type:"Regional University (Public)"},
+  {name:"Montana State University",state:"MT",type:"R2 Research University (Public)"},
+  // NEBRASKA
+  {name:"University of Nebraska-Lincoln",state:"NE",type:"R1 Research University (Public)"},
+  {name:"Creighton University",state:"NE",type:"R2 Research University (Private)"},
+  {name:"Nebraska Wesleyan University",state:"NE",type:"Private Liberal Arts"},
+  // NEVADA
+  {name:"University of Nevada Las Vegas",state:"NV",type:"R1 Research University (Public)"},
+  {name:"University of Nevada Reno",state:"NV",type:"R1 Research University (Public)"},
+  {name:"College of Southern Nevada",state:"NV",type:"Community College"},
+  // NEW HAMPSHIRE
+  {name:"Dartmouth College",state:"NH",type:"R1 Research University (Private / Ivy)"},
+  {name:"University of New Hampshire",state:"NH",type:"R2 Research University (Public)"},
+  {name:"Plymouth State University",state:"NH",type:"Regional University (Public)"},
+  {name:"NHTI Concord's Community College",state:"NH",type:"Community College"},
+  // NEW JERSEY
+  {name:"Princeton University",state:"NJ",type:"R1 Research University (Private / Ivy)"},
+  {name:"Rutgers University New Brunswick",state:"NJ",type:"R1 Research University (Public)"},
+  {name:"Stevens Institute of Technology",state:"NJ",type:"R2 Research University (Private)"},
+  {name:"Montclair State University",state:"NJ",type:"Regional University (Public)"},
+  {name:"Kean University",state:"NJ",type:"Regional University (Public)"},
+  {name:"Raritan Valley Community College",state:"NJ",type:"Community College"},
+  // NEW MEXICO
+  {name:"University of New Mexico",state:"NM",type:"R1 Research University (Public)"},
+  {name:"New Mexico State University",state:"NM",type:"R2 Research University (Public)"},
+  {name:"Santa Fe Community College",state:"NM",type:"Community College"},
+  // NEW YORK
+  {name:"Columbia University",state:"NY",type:"R1 Research University (Private / Ivy)"},
+  {name:"Cornell University",state:"NY",type:"R1 Research University (Private / Ivy)"},
+  {name:"New York University",state:"NY",type:"R1 Research University (Private)"},
+  {name:"Fordham University",state:"NY",type:"R2 Research University (Private)"},
+  {name:"Syracuse University",state:"NY",type:"R1 Research University (Private)"},
+  {name:"University at Buffalo (SUNY)",state:"NY",type:"R1 Research University (Public)"},
+  {name:"Stony Brook University (SUNY)",state:"NY",type:"R1 Research University (Public)"},
+  {name:"Vassar College",state:"NY",type:"Liberal Arts College"},
+  {name:"Colgate University",state:"NY",type:"Liberal Arts College"},
+  {name:"Hamilton College",state:"NY",type:"Liberal Arts College"},
+  {name:"Bard College",state:"NY",type:"Liberal Arts College"},
+  {name:"The New School",state:"NY",type:"Private University (Arts & Social Sciences)"},
+  {name:"Pratt Institute",state:"NY",type:"Private Arts & Design College"},
+  {name:"CUNY Borough of Manhattan Community College",state:"NY",type:"Community College"},
+  {name:"CUNY LaGuardia Community College",state:"NY",type:"Community College"},
+  {name:"Sarah Lawrence College",state:"NY",type:"Experimental Liberal Arts College"},
+  {name:"Skidmore College",state:"NY",type:"Liberal Arts College"},
+  {name:"Union College",state:"NY",type:"Liberal Arts College"},
+  // NORTH CAROLINA
+  {name:"Duke University",state:"NC",type:"R1 Research University (Private)"},
+  {name:"University of North Carolina Chapel Hill",state:"NC",type:"R1 Research University (Public)"},
+  {name:"North Carolina State University",state:"NC",type:"R1 Research University (Public)"},
+  {name:"Wake Forest University",state:"NC",type:"R1 Research University (Private)"},
+  {name:"Davidson College",state:"NC",type:"Liberal Arts College"},
+  {name:"Warren Wilson College",state:"NC",type:"Work-Study-Service Liberal Arts"},
+  {name:"North Carolina A&T State University",state:"NC",type:"HBCU / R2 Research University"},
+  {name:"Bennett College",state:"NC",type:"HBCU / Liberal Arts College"},
+  {name:"Central Piedmont Community College",state:"NC",type:"Community College"},
+  // NORTH DAKOTA
+  {name:"University of North Dakota",state:"ND",type:"R2 Research University (Public)"},
+  {name:"North Dakota State University",state:"ND",type:"R2 Research University (Public)"},
+  // OHIO
+  {name:"Ohio State University",state:"OH",type:"R1 Research University (Public)"},
+  {name:"Case Western Reserve University",state:"OH",type:"R1 Research University (Private)"},
+  {name:"University of Cincinnati",state:"OH",type:"R1 Research University (Public)"},
+  {name:"Oberlin College",state:"OH",type:"Liberal Arts College"},
+  {name:"Kenyon College",state:"OH",type:"Liberal Arts College"},
+  {name:"Denison University",state:"OH",type:"Liberal Arts College"},
+  {name:"College of Wooster",state:"OH",type:"Liberal Arts College"},
+  {name:"Antioch College",state:"OH",type:"Experimental Liberal Arts College"},
+  {name:"Cincinnati State Technical & Community College",state:"OH",type:"Community College"},
+  {name:"Cuyahoga Community College",state:"OH",type:"Community College"},
+  // OKLAHOMA
+  {name:"University of Oklahoma",state:"OK",type:"R1 Research University (Public)"},
+  {name:"Oklahoma State University",state:"OK",type:"R1 Research University (Public)"},
+  {name:"Langston University",state:"OK",type:"HBCU / Regional University (Public)"},
+  {name:"Tulsa Community College",state:"OK",type:"Community College"},
+  // OREGON
+  {name:"University of Oregon",state:"OR",type:"R1 Research University (Public)"},
+  {name:"Oregon State University",state:"OR",type:"R1 Research University (Public)"},
+  {name:"Reed College",state:"OR",type:"Liberal Arts College"},
+  {name:"Lewis & Clark College",state:"OR",type:"Liberal Arts College"},
+  {name:"Linfield University",state:"OR",type:"Private Liberal Arts"},
+  {name:"Portland Community College",state:"OR",type:"Community College"},
+  {name:"Southwestern Oregon Community College",state:"OR",type:"Community College"},
+  // PENNSYLVANIA
+  {name:"University of Pennsylvania",state:"PA",type:"R1 Research University (Private / Ivy)"},
+  {name:"Carnegie Mellon University",state:"PA",type:"R1 Research University (Private)"},
+  {name:"Penn State University",state:"PA",type:"R1 Research University (Public)"},
+  {name:"Temple University",state:"PA",type:"R1 Research University (Public)"},
+  {name:"Drexel University",state:"PA",type:"R1 Research University (Private)"},
+  {name:"Swarthmore College",state:"PA",type:"Liberal Arts College"},
+  {name:"Haverford College",state:"PA",type:"Liberal Arts College"},
+  {name:"Bryn Mawr College",state:"PA",type:"Liberal Arts College"},
+  {name:"Dickinson College",state:"PA",type:"Liberal Arts College"},
+  {name:"Franklin & Marshall College",state:"PA",type:"Liberal Arts College"},
+  {name:"Gettysburg College",state:"PA",type:"Liberal Arts College"},
+  {name:"Muhlenberg College",state:"PA",type:"Liberal Arts College"},
+  {name:"Community College of Philadelphia",state:"PA",type:"Community College"},
+  {name:"Lincoln University",state:"PA",type:"HBCU / Liberal Arts College"},
+  // RHODE ISLAND
+  {name:"Brown University",state:"RI",type:"R1 Research University (Private / Ivy)"},
+  {name:"University of Rhode Island",state:"RI",type:"R2 Research University (Public)"},
+  {name:"Rhode Island School of Design",state:"RI",type:"Private Arts & Design College"},
+  {name:"Providence College",state:"RI",type:"Private Liberal Arts University"},
+  {name:"Roger Williams University",state:"RI",type:"Private Teaching University"},
+  {name:"Salve Regina University",state:"RI",type:"Private Liberal Arts University"},
+  {name:"Community College of Rhode Island",state:"RI",type:"Community College"},
+  // SOUTH CAROLINA
+  {name:"University of South Carolina",state:"SC",type:"R1 Research University (Public)"},
+  {name:"Clemson University",state:"SC",type:"R1 Research University (Public)"},
+  {name:"Furman University",state:"SC",type:"Liberal Arts College"},
+  {name:"Wofford College",state:"SC",type:"Liberal Arts College"},
+  {name:"South Carolina State University",state:"SC",type:"HBCU / Regional University (Public)"},
+  {name:"Trident Technical College",state:"SC",type:"Community College"},
+  // SOUTH DAKOTA
+  {name:"University of South Dakota",state:"SD",type:"Regional University (Public)"},
+  {name:"South Dakota State University",state:"SD",type:"R2 Research University (Public)"},
+  // TENNESSEE
+  {name:"Vanderbilt University",state:"TN",type:"R1 Research University (Private)"},
+  {name:"University of Tennessee Knoxville",state:"TN",type:"R1 Research University (Public)"},
+  {name:"Rhodes College",state:"TN",type:"Liberal Arts College"},
+  {name:"Sewanee: The University of the South",state:"TN",type:"Liberal Arts College"},
+  {name:"Tennessee State University",state:"TN",type:"HBCU / Regional University (Public)"},
+  {name:"Nashville State Community College",state:"TN",type:"Community College"},
+  // TEXAS
+  {name:"University of Texas at Austin",state:"TX",type:"R1 Research University (Public)"},
+  {name:"Texas A&M University",state:"TX",type:"R1 Research University (Public)"},
+  {name:"Rice University",state:"TX",type:"R1 Research University (Private)"},
+  {name:"Southern Methodist University",state:"TX",type:"R1 Research University (Private)"},
+  {name:"University of Houston",state:"TX",type:"R1 Research University (Public)"},
+  {name:"Prairie View A&M University",state:"TX",type:"HBCU / Regional University (Public)"},
+  {name:"Texas Southern University",state:"TX",type:"HBCU / Regional University (Public)"},
+  {name:"Trinity University",state:"TX",type:"Private Liberal Arts University"},
+  {name:"Austin Community College",state:"TX",type:"Community College"},
+  {name:"San Jacinto College",state:"TX",type:"Community College"},
+  {name:"St. Mary's University",state:"TX",type:"Private Teaching University"},
+  // UTAH
+  {name:"University of Utah",state:"UT",type:"R1 Research University (Public)"},
+  {name:"Brigham Young University",state:"UT",type:"Private Research University"},
+  {name:"Utah State University",state:"UT",type:"R2 Research University (Public)"},
+  {name:"Salt Lake Community College",state:"UT",type:"Community College"},
+  // VERMONT
+  {name:"University of Vermont",state:"VT",type:"R2 Research University (Public)"},
+  {name:"Middlebury College",state:"VT",type:"Liberal Arts College"},
+  {name:"Bennington College",state:"VT",type:"Experimental Liberal Arts College"},
+  {name:"Community College of Vermont",state:"VT",type:"Community College"},
+  // VIRGINIA
+  {name:"University of Virginia",state:"VA",type:"R1 Research University (Public)"},
+  {name:"Virginia Tech",state:"VA",type:"R1 Research University (Public)"},
+  {name:"William & Mary",state:"VA",type:"R2 Research University (Public)"},
+  {name:"Washington and Lee University",state:"VA",type:"Liberal Arts College"},
+  {name:"Sweet Briar College",state:"VA",type:"Liberal Arts College"},
+  {name:"Hampton University",state:"VA",type:"HBCU / Private University"},
+  {name:"Virginia State University",state:"VA",type:"HBCU / Regional University (Public)"},
+  {name:"Northern Virginia Community College",state:"VA",type:"Community College"},
+  {name:"Tidewater Community College",state:"VA",type:"Community College"},
+  // WASHINGTON
+  {name:"University of Washington",state:"WA",type:"R1 Research University (Public)"},
+  {name:"Washington State University",state:"WA",type:"R1 Research University (Public)"},
+  {name:"Seattle University",state:"WA",type:"Private Teaching University"},
+  {name:"Whitman College",state:"WA",type:"Liberal Arts College"},
+  {name:"The Evergreen State College",state:"WA",type:"Experimental Liberal Arts College"},
+  {name:"South Puget Sound Community College",state:"WA",type:"Community College"},
+  {name:"Shoreline Community College",state:"WA",type:"Community College"},
+  // WEST VIRGINIA
+  {name:"West Virginia University",state:"WV",type:"R1 Research University (Public)"},
+  {name:"Bethany College",state:"WV",type:"Liberal Arts College"},
+  // WISCONSIN
+  {name:"University of Wisconsin-Madison",state:"WI",type:"R1 Research University (Public)"},
+  {name:"Marquette University",state:"WI",type:"R2 Research University (Private)"},
+  {name:"Lawrence University",state:"WI",type:"Liberal Arts College"},
+  {name:"Beloit College",state:"WI",type:"Liberal Arts College"},
+  {name:"Madison College",state:"WI",type:"Community College"},
+  {name:"Milwaukee Area Technical College",state:"WI",type:"Technical College"},
+  // WYOMING
+  {name:"University of Wyoming",state:"WY",type:"R2 Research University (Public)"},
+  {name:"Laramie County Community College",state:"WY",type:"Community College"},
+  // NATIONAL / ONLINE
+  {name:"Western Governors University",state:"UT",type:"Online / Competency-Based University"},
+  {name:"Southern New Hampshire University",state:"NH",type:"Online / Teaching University"},
+  {name:"Olin College of Engineering",state:"MA",type:"Project-Based Engineering College"},
+  {name:"Deep Springs College",state:"CA",type:"Radical Liberal Arts (Two-Year)"},
+  {name:"Minerva University",state:"CA",type:"Global Active Learning University"},
+  {name:"Quest University Canada",state:"--",type:"Liberal Arts Block Plan (Canada)"}
+];
+
+// Build state list
+const STATE_NAMES = {
+  AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",
+  CT:"Connecticut",DE:"Delaware",DC:"Washington D.C.",FL:"Florida",GA:"Georgia",
+  HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",
+  KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",
+  MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",
+  NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",
+  NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
+  OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",
+  TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",
+  WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming","--":"International/Online"
+};
+
+// ─── AUTOCOMPLETE ─────────────────────────────────────────────────────────────
+let selectedInst=null;
+let stateFilter="";
+
+function filterByState(){
+  stateFilter=document.getElementById('state-filter').value;
+  const count=INSTITUTIONS.filter(i=>!stateFilter||i.state===stateFilter).length;
+  document.getElementById('result-count').textContent=stateFilter?`${count} institutions in ${STATE_NAMES[stateFilter]||stateFilter}`:`${count} institutions nationwide`;
+  onInstSearch();
+}
+
+function onInstSearch(){
+  const q=document.getElementById('inst-search').value.toLowerCase().trim();
+  const list=document.getElementById('ac-list');
+  const filtered=INSTITUTIONS.filter(i=>{
+    const stateOk=!stateFilter||i.state===stateFilter;
+    const nameOk=!q||i.name.toLowerCase().includes(q);
+    return stateOk&&nameOk;
+  }).slice(0,12);
+  if(!filtered.length||(!q&&!stateFilter)){list.style.display='none';return;}
+  list.innerHTML=filtered.map(i=>`
+    <div class="ac-item" onclick="selectInst(${JSON.stringify(i).replace(/"/g,'&quot;')})">
+      <span>${i.name}</span>
+      <span class="ac-state">${STATE_NAMES[i.state]||i.state}</span>
+    </div>`).join('');
+  list.style.display='block';
+}
+
+function selectInst(inst){
+  selectedInst=inst;
+  document.getElementById('ac-list').style.display='none';
+  document.getElementById('inst-search').value=inst.name;
+  document.getElementById('inst-selected-name').textContent=inst.name;
+  document.getElementById('inst-selected-state').textContent=`· ${STATE_NAMES[inst.state]||inst.state} · ${inst.type}`;
+  document.getElementById('inst-selected-display').style.display='block';
+  document.getElementById('inst-type-display').value=inst.type;
+}
+
+function clearInst(){
+  selectedInst=null;
+  document.getElementById('inst-search').value='';
+  document.getElementById('inst-selected-display').style.display='none';
+  document.getElementById('inst-type-display').value='';
+  document.getElementById('ac-list').style.display='none';
+}
+
+// Populate state dropdown
+(function(){
+  const states=[...new Set(INSTITUTIONS.map(i=>i.state))].sort();
+  const sel=document.getElementById('state-filter');
+  states.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s;o.textContent=STATE_NAMES[s]||s;
+    sel.appendChild(o);
+  });
+  document.getElementById('result-count').textContent=`${INSTITUTIONS.length} institutions nationwide`;
+})();
+
+// Close autocomplete on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.autocomplete-wrap')) document.getElementById('ac-list').style.display='none';
+});
+
+// ─── SURVEY ───────────────────────────────────────────────────────────────────
+const SURVEY_SECTIONS=[
+  {label:"Mission & Identity",questions:[
+    {type:"mc",prompt:"How does your institution primarily describe its educational mission in official communications?",
+     opts:["Selection and cultivation of elite talent for high-status roles","Exploratory liberal education and whole-student development","Applied workforce preparation and credentialing for specific careers","Open-access remediation and foundational skill-building for underserved populations"],
+     w:[4,3,2,1],dim:"mission"},
+    {type:"scale",prompt:"How clearly and consistently is your institution's core mission communicated across all departments, programs, and administrative units?",low:"Not at all clear",high:"Completely aligned",dim:"mission"},
+    {type:"mc",prompt:"When your institution faces a conflict between serving high-achieving students and serving underprepared students, the default institutional behavior is to:",
+     opts:["Prioritize academic standards (risk disappointing underprepared students)","Attempt to serve both through differentiated programming","Lower standards to retain underprepared students","Refer underprepared students to other institutions or programs"],
+     w:[4,3,2,1],dim:"mission"},
+    {type:"mc",prompt:"Your institution's primary function — as actually practiced, not aspirationally stated — is best described as:",
+     opts:["Gatekeeping and elite formation","Incubating potential and building identity","Workforce development and credential delivery","Educational triage and foundational rebuilding"],
+     w:[4,3,2,1],dim:"mission"},
+    {type:"scale",prompt:"To what degree does your institution's actual student population match the population your mission claims to serve?",low:"Major mismatch",high:"Near-perfect alignment",dim:"mission"}
+  ]},
+  {label:"Student Population",questions:[
+    {type:"mc",prompt:"What best characterizes the academic preparedness of the majority of students your institution currently enrolls?",
+     opts:["Highly prepared — arrive with strong academic skills, test scores, and self-direction","Moderately prepared with high potential but uneven maturity or direction","Practically skilled but not strong in abstract academic tasks","Significantly underprepared in both academic skills and developmental readiness"],
+     w:[4,3,2,1],dim:"students"},
+    {type:"scale",prompt:"What percentage of your incoming students require developmental/remedial coursework before college-level work? (1=under 10%, 5=over 60%)",low:"Under 10%",high:"Over 60%",dim:"students"},
+    {type:"mc",prompt:"The most common reason students leave your institution without a degree is:",
+     opts:["Transferred to a more prestigious or specialized institution","Couldn't find direction or commitment to a major","Financial pressure or desire to enter the workforce","Academic failure, personal crisis, or inability to manage demands"],
+     w:[4,3,2,1],dim:"students"},
+    {type:"scale",prompt:"How diverse is your student body in terms of first-generation status, income level, and prior academic preparation? (1=very homogeneous, 5=highly diverse)",low:"Very homogeneous",high:"Highly diverse",dim:"students"},
+    {type:"mc",prompt:"Your institution's Pell Grant recipient rate (share of students from low-income families) is approximately:",
+     opts:["Under 15%","15–30%","30–50%","Over 50%"],
+     w:[4,3,2,1],dim:"students"}
+  ]},
+  {label:"Academic Rigor & Curriculum",questions:[
+    {type:"mc",prompt:"The dominant cognitive demand of your institution's core curriculum is best characterized as:",
+     opts:["High abstraction, symbolic reasoning, and independent problem-framing","Moderate conceptual work, deliberately scaffolded with guided inquiry","Applied, task-centered procedural learning and real-world problem solving","Foundational literacy, numeracy, and basic reasoning with explicit instruction"],
+     w:[4,3,2,1],dim:"rigor"},
+    {type:"scale",prompt:"How often does your curriculum explicitly integrate research, original inquiry, or faculty scholarship into undergraduate coursework?",low:"Rarely/Never",high:"Systematically",dim:"rigor"},
+    {type:"mc",prompt:"Course pacing and workload expectations across your institution are most accurately described as:",
+     opts:["Demanding — students manage heavy workloads with minimal external scaffolding","Moderately demanding with structured support and scaffolding","Practical and manageable — paced to allow for mastery through repetition","Variable — significant grade inflation and accommodation of inconsistent effort"],
+     w:[4,3,2,1],dim:"rigor"},
+    {type:"scale",prompt:"How systematically are clear learning outcomes defined and assessed across all programs?",low:"Not systematically",high:"Institution-wide system",dim:"rigor"},
+    {type:"mc",prompt:"Faculty feedback practices at your institution are best described as:",
+     opts:["Rigorous, specific, and timely — frequently used to push students further","Generally good but inconsistent across faculty and departments","Primarily grade-based with limited narrative or developmental feedback","Minimal — feedback is a persistent weakness across the institution"],
+     w:[4,3,2,1],dim:"rigor"}
+  ]},
+  {label:"Institutional Capability & Scaffolding",questions:[
+    {type:"mc",prompt:"The advising model at your institution is best described as:",
+     opts:["Light-touch; assumes student self-direction and self-initiation","Moderate — available on request with proactive check-ins","Intensive — regular mandatory check-ins, developmental framing","High-contact wraparound — case management model with mandatory advising"],
+     w:[4,3,2,1],dim:"capability"},
+    {type:"scale",prompt:"How adequate are your institution's mental health and wellness resources relative to demonstrated student need?",low:"Severely inadequate",high:"Fully meets need",dim:"capability"},
+    {type:"mc",prompt:"Your institution's approach to early alert / intervention when students are struggling is:",
+     opts:["Minimal — students are expected to seek help independently","Systems exist but activation is inconsistent or student-initiated","Functioning early alert with faculty reporting and advisor follow-up","Integrated real-time system with mandatory follow-up and case coordination"],
+     w:[1,2,3,4],dim:"capability"},
+    {type:"scale",prompt:"To what degree does your institution have differentiated programming for students with significantly different levels of academic preparation?",low:"One-size-fits-all",high:"Fully differentiated",dim:"capability"},
+    {type:"mc",prompt:"The quality and capacity of tutoring, writing centers, and embedded academic support at your institution are:",
+     opts:["World-class — deeply integrated and proactively deployed","Good — well-resourced and used by a significant share of students","Adequate — available but underutilized or understaffed","Inadequate — resources do not match the level of need"],
+     w:[4,3,2,1],dim:"capability"},
+    {type:"scale",prompt:"How well-funded and staffed are your student affairs, counseling, disability services, and wraparound support functions?",low:"Severely underfunded",high:"Robustly funded",dim:"capability"}
+  ]},
+  {label:"Faculty & Pedagogy",questions:[
+    {type:"mc",prompt:"Faculty at your institution are primarily hired and rewarded for:",
+     opts:["Research productivity, publications, and grant activity","Teaching quality and student development outcomes","Applied industry expertise and vocational mentorship","General instructional capacity with focus on access and retention"],
+     w:[4,3,2,1],dim:"faculty"},
+    {type:"scale",prompt:"How much formal investment does your institution make in faculty pedagogical development (training, workshops, instructional coaching)?",low:"None/minimal",high:"Systematic and funded",dim:"faculty"},
+    {type:"mc",prompt:"The ratio of tenure-track/full-time faculty to adjunct/part-time faculty at your institution is approximately:",
+     opts:["Predominantly full-time tenure-track (over 70%)","Roughly balanced (40–70% full-time)","Adjunct-heavy (under 40% full-time)","Largely adjunct (under 20% full-time)"],
+     w:[4,3,2,1],dim:"faculty"},
+    {type:"scale",prompt:"How well do faculty understand and respond to the developmental (not just academic) needs of their students?",low:"Very poorly",high:"Exceptionally well",dim:"faculty"},
+    {type:"mc",prompt:"Teaching quality is evaluated at your institution primarily through:",
+     opts:["Multi-dimensional peer review, student feedback, and evidence of learning outcomes","Primarily student satisfaction surveys supplemented by peer observation","Student evaluations only","Teaching quality is rarely systematically evaluated"],
+     w:[4,3,2,1],dim:"faculty"}
+  ]},
+  {label:"Outcomes & Mobility",questions:[
+    {type:"mc",prompt:"Your institution's 6-year graduation rate is approximately:",
+     opts:["Over 85%","65–85%","45–65%","Under 45%"],
+     w:[4,3,2,1],dim:"outcomes"},
+    {type:"scale",prompt:"How effectively does your institution track and support student mobility (transfer out, transfer in, program changes) as a developmental positive rather than a failure metric?",low:"Not tracked / treated as failure",high:"Tracked and supported proactively",dim:"outcomes"},
+    {type:"mc",prompt:"Post-graduation employment or further education outcomes for your graduates are:",
+     opts:["Exceptional — high placement in competitive jobs or elite graduate programs","Good — most graduates find relevant employment within a year","Adequate — employment outcomes are positive but variable by program","Inconsistent — many graduates struggle to find relevant employment"],
+     w:[4,3,2,1],dim:"outcomes"},
+    {type:"scale",prompt:"How intentionally does your institution create upward mobility pathways — mechanisms for students to move to more demanding programs as they develop?",low:"Not intentional",high:"Systematic and transparent",dim:"outcomes"},
+    {type:"mc",prompt:"Your institution's financial model is best described as:",
+     opts:["Well-resourced endowment/grants — not primarily tuition-dependent","Stable — balanced mix of tuition, state funding, and philanthropy","Tuition-dependent — significant enrollment pressure drives decisions","Financially fragile — budget constraints limit educational quality and support"],
+     w:[4,3,2,1],dim:"outcomes"}
+  ]}
+];
+
+let allQuestions=[];
+SURVEY_SECTIONS.forEach(sec=>sec.questions.forEach(q=>{q.secLabel=sec.label;allQuestions.push(q);}));
+
+let currentAnswer=null,allAnswers=[];
+let dimScores={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
+let dimCounts={mission:0,students:0,rigor:0,capability:0,faculty:0,outcomes:0};
+
+function beginSurvey(){
+  if(!selectedInst&&!document.getElementById('inst-search').value.trim()){
+    alert('Please enter or select your institution name.');return;
+  }
+  if(!selectedInst){
+    selectedInst={name:document.getElementById('inst-search').value.trim(),state:'',type:document.getElementById('inst-type-display').value};
+  }
+  showView('view-survey');renderQ();
+}
+
+function renderQ(){
+  currentAnswer=null;
+  const idx=allAnswers.length;
+  if(idx>=allQuestions.length){computeResults();return;}
+  const q=allQuestions[idx];
+  const total=allQuestions.length;
+  document.getElementById('survey-counter').textContent=`Q${idx+1}/${total}`;
+  document.getElementById('survey-bar').style.width=`${(idx/total)*100}%`;
+  document.getElementById('survey-q-section').textContent=q.secLabel;
+  document.getElementById('survey-q-prompt').textContent=q.prompt;
+  const body=document.getElementById('survey-q-body');
+  body.innerHTML='';
+  document.getElementById('next-btn').disabled=true;
+  document.getElementById('next-btn').style.opacity='0.4';
+
+  if(q.type==='mc'){
+    const div=document.createElement('div');div.className='opts';
+    q.opts.forEach((opt,i)=>{
+      const b=document.createElement('button');b.className='opt-btn';
+      b.innerHTML=`<span class="opt-letter">${String.fromCharCode(65+i)}.</span>${opt}`;
+      b.onclick=()=>{
+        div.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        currentAnswer={value:q.w[i],dim:q.dim};
+        enableNext();
+      };
+      div.appendChild(b);
+    });
+    body.appendChild(div);
+  } else if(q.type==='scale'){
+    const wrap=document.createElement('div');
+    const row=document.createElement('div');row.className='scale-row';
+    for(let v=1;v<=5;v++){
+      const b=document.createElement('button');b.className='scale-btn';b.textContent=v;
+      b.onclick=()=>{
+        row.querySelectorAll('.scale-btn').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        currentAnswer={value:v,dim:q.dim};
+        enableNext();
+      };
+      row.appendChild(b);
+    }
+    const ends=document.createElement('div');ends.className='scale-ends';
+    ends.innerHTML=`<span>${q.low}</span><span>${q.high}</span>`;
+    wrap.appendChild(row);wrap.appendChild(ends);
+    body.appendChild(wrap);
+  }
+}
+
+function enableNext(){
+  document.getElementById('next-btn').disabled=false;
+  document.getElementById('next-btn').style.opacity='1';
+}
+
+function advanceSurvey(){
+  if(!currentAnswer)return;
+  allAnswers.push(currentAnswer);
+  const d=currentAnswer.dim;
+  dimScores[d]=(dimScores[d]||0)+currentAnswer.value;
+  dimCounts[d]=(dimCounts[d]||0)+1;
+  renderQ();
+}
+
+// ─── INSTITUTION PROFILES ────────────────────────────────────────────────────
+const ENV_PROFILES={
+  Tournament:{color:"#4f46e5",bg:"#eef2ff",border:"#818cf8",emoji:"🏆",
+    label:"Tournament Environment",tagline:"High Mission Intensity · High Institutional Capability",
+    desc:"Your institution operates as a Tournament environment: highly selective, research-intensive, and designed to cultivate elite intellectual and professional achievement. You serve high-viability students (Competitors) who arrive with strong cognitive and developmental capital and require challenge, peer competition, and access to elite networks.",
+    strengths:["Strong selectivity filters ensure mission-aligned student intake","High research intensity drives faculty excellence and student exposure to inquiry","Alumni networks and brand recognition generate compounding student opportunity","Cultural norms of high autonomy and self-direction match Competitor profiles"],
+    gaps:["Risk of burnout culture and unsustainable performance pressure","Limited scaffolding for students who slip or face life crises","May under-serve first-generation students admitted without adequate support","Prestige culture can crowd out intrinsic learning with credential-chasing"],
+    recs:[
+      {title:"Invest in sustainability infrastructure",detail:"High-performing students still face burnout, imposter syndrome, and mental health crises. Build robust, stigma-free wellness systems proportional to your enrollment intensity."},
+      {title:"Expand developmental advising for transition students",detail:"Students who arrive strong but encounter unexpected obstacles need more than academic advising — they need developmental support. Train advisors in the language of maturity capital."},
+      {title:"Audit teaching quality alongside research output",detail:"Your institution may prioritize research productivity in hiring and promotion while neglecting pedagogical training. Establish teaching quality as a measurable institutional value."},
+      {title:"Develop explicit mobility pathways",detail:"Students who don't thrive in the Tournament environment should have transparent pathways to Greenhouse or Credentialing environments, not just academic penalties."}
+    ],
+    examples:["Harvard, Stanford, MIT","UC Berkeley, University of Michigan (public)","University of Chicago, Yale, Princeton","Duke, Johns Hopkins, Carnegie Mellon"]},
+  Greenhouse:{color:"#059669",bg:"#f0fdf4",border:"#6ee7b7",emoji:"🌱",
+    label:"Greenhouse Environment",tagline:"High Intellectual Ambition · Developmental Support Infrastructure",
+    desc:"Your institution operates as a Greenhouse: intellectually ambitious but structured for developmental support rather than elite selection. You serve Explorers — students with strong cognitive potential but uneven maturity, unclear vocational identity, or gaps in social and cultural capital. Your core function is cultivation: converting high potential into durable viability.",
+    strengths:["Small class sizes and high faculty contact enable relational pedagogy","Flexible curriculum allows identity formation through disciplinary exploration","Institutional culture tolerates and even celebrates nonlinear development","Strong advising infrastructure bridges academic and developmental needs"],
+    gaps:["Without accountability structures, students may drift without vocational direction","ROI ambiguity creates enrollment pressure as families question career outcomes","Faculty may be trained in content delivery but not developmental advising","Risk of being a 'holding environment' that delays rather than advances mobility"],
+    recs:[
+      {title:"Build structured vocational identity pathways",detail:"Exploration must eventually converge. Build explicit checkpoints (end of year 1, end of year 2) where students articulate vocational hypotheses with advisor support."},
+      {title:"Train faculty in developmental advising",detail:"Greenhouse success depends on faculty who understand maturity capital, not just course content. Invest in faculty development around emerging adulthood and identity formation."},
+      {title:"Create accountability without rigidity",detail:"Introduce milestone-based progression that allows flexibility in path while ensuring forward momentum — preventing aimless accumulation of credits without development."},
+      {title:"Strengthen career integration from year one",detail:"Explorers need low-stakes exposure to real-world domains early. Build internships, job shadows, and practitioner panels into the first-year experience."}
+    ],
+    examples:["Wesleyan, Reed, Oberlin, Sarah Lawrence","Hampshire, Evergreen State, Bennington","Colorado College, Antioch, Warren Wilson","Many liberal arts colleges with strong advising"]},
+  Credentialing:{color:"#d97706",bg:"#fffbeb",border:"#fcd34d",emoji:"🔧",
+    label:"Credentialing Environment",tagline:"Applied Learning · Workforce Alignment · Practical Mastery",
+    desc:"Your institution operates as a Credentialing environment: applied, outcome-focused, and aligned with labor market demands. You serve Pragmatists — students with strong developmental readiness and a pragmatic orientation toward learning. Your core function is workforce preparation: converting real-world motivation into certified, market-relevant competence.",
+    strengths:["Tight alignment between curriculum and employer needs ensures relevance","Short time-to-completion and clear milestones respect student constraints","Mastery-based instruction rewards consistency and follow-through","Strong employer partnerships provide direct pathways to jobs"],
+    gaps:["Limited upward mobility pathways can cap student ambition","Credential inflation threatens the value of programs over time","Part-time adjunct faculty may lack the mentorship capacity Pragmatists need","Stigma as 'second-tier' can undermine student identity and institutional confidence"],
+    recs:[
+      {title:"Build stackable credential architecture",detail:"Design programs so students can move from certificate to associate to bachelor's without losing credits. Mobility should be structural, not aspirational."},
+      {title:"Invest in faculty-as-mentor model",detail:"Pragmatists thrive under apprenticeship-style relationships. Prioritize faculty hiring and retention based on mentorship capacity and industry experience, not just credentials."},
+      {title:"Counter stigma with outcome data",detail:"Publish and promote graduate wage data, employment rates, and employer satisfaction scores. Data-driven narrative reframes credentialing as high-ROI, not consolation prize."},
+      {title:"Identify latent Competitors and Explorers",detail:"Some students in your programs have higher cognitive potential than their placement suggests. Build identification mechanisms and transfer pathways for students ready to move upward."}
+    ],
+    examples:["Community College of Denver, SNHU, WGU","Wentworth Institute of Technology","Trade/technical colleges and bootcamps","Allied health and vocational certificate programs"]},
+  RepairShop:{color:"#dc2626",bg:"#fef2f2",border:"#fca5a5",emoji:"🏥",
+    label:"Repair Shop Environment",tagline:"Triage · Stabilization · Foundational Reconstruction",
+    desc:"Your institution operates as a Repair Shop: open-access, resource-intensive, and focused on foundational reconstruction for underprepared students. You serve Aspirants who arrive with gaps in cognitive readiness, maturity capital, and often basic life stability. Your core function is triage and recovery — the most difficult and most important mission in the postsecondary system.",
+    strengths:["Open access ethos ensures no student is turned away due to prior failure","Wraparound services address the full ecology of student need","Flexible scheduling accommodates students with work and family obligations","Community-embedded relationships generate trust that elite institutions cannot replicate"],
+    gaps:["Chronic underfunding limits the intensity of support needed for this population","High attrition rates create cycles of false starts and deepening disenchantment","Pressure to pass students without real growth compromises institutional integrity","Faculty burnout is endemic without adequate professional support infrastructure"],
+    recs:[
+      {title:"Shift from credit accumulation to capability milestones",detail:"Degrees mean little if foundational skills were never repaired. Build competency-based checkpoints that certify genuine capacity before advancing students into higher-demand courses."},
+      {title:"Implement trauma-informed institutional culture",detail:"The population you serve has often experienced systemic failure. Train all staff — not just counselors — in trauma-informed practice and restorative communication."},
+      {title:"Design explicit upward mobility pathways",detail:"Repair Shop is a launchpad, not a destination. Build transparent, supported pathways into Credentialing or Greenhouse environments as students stabilize."},
+      {title:"Advocate vigorously for funding parity",detail:"The students with the greatest need receive the fewest resources. Repair Shop leaders must become institutional advocates for equitable funding models at state and federal levels."}
+    ],
+    examples:["Local open-access community colleges","Access-focused regional state universities","Adult basic education programs","Workforce reentry and developmental ed programs"]}
+};
+
+// ─── CLASSIFICATION ───────────────────────────────────────────────────────────
+function computeResults(){
+  const norm={};
+  Object.keys(dimScores).forEach(d=>{
+    const max=dimCounts[d]*5;
+    norm[d]=max>0?Math.round((dimScores[d]/max)*100):50;
+  });
+
+  // Adjust based on known institution type
+  let typeBoost={mi:0,ic:0};
+  if(selectedInst&&selectedInst.type){
+    const t=selectedInst.type.toLowerCase();
+    if(t.includes('r1')||t.includes('ivy')) typeBoost={mi:12,ic:10};
+    else if(t.includes('liberal arts')) typeBoost={mi:6,ic:4};
+    else if(t.includes('community college')||t.includes('technical')) typeBoost={mi:-10,ic:-8};
+    else if(t.includes('experimental')) typeBoost={mi:4,ic:-4};
+    else if(t.includes('hbcu')) typeBoost={mi:0,ic:6};
+  }
+
+  const mi=Math.min(100,Math.max(0,Math.round((norm.rigor+norm.mission+norm.faculty)/3)+typeBoost.mi));
+  const ic=Math.min(100,Math.max(0,Math.round((norm.capability+norm.outcomes+norm.students)/3)+typeBoost.ic));
+
+  const hiMI=mi>=52,hiIC=ic>=52;
+  let type;
+  if(hiMI&&hiIC) type='Tournament';
+  else if(hiMI&&!hiIC) type='Greenhouse';
+  else if(!hiMI&&hiIC) type='Credentialing';
+  else type='RepairShop';
+
+  showResults(type,mi,ic,norm);
+}
+
+function showResults(type,mi,ic,norm){
+  const p=ENV_PROFILES[type];
+  const instDisplay=selectedInst?selectedInst.name:'Your Institution';
+
+  const hdr=document.getElementById('res-header');
+  hdr.style.background=p.bg;hdr.style.border=`2px solid ${p.border}`;
+  hdr.innerHTML=`
+    <div class="res-emoji">${p.emoji}</div>
+    <div class="res-type" style="color:${p.color}">${p.label}</div>
+    <div style="font-size:12px;color:#9ca3af;margin-bottom:4px">${instDisplay}</div>
+    <div class="res-tagline">${p.tagline}</div>
+    <div class="res-scores">
+      <div class="score-item"><div class="score-val" style="color:${p.color}">${mi}%</div><div class="score-lbl">Mission Intensity</div></div>
+      <div class="score-div"></div>
+      <div class="score-item"><div class="score-val" style="color:${p.color}">${ic}%</div><div class="score-lbl">Institutional Capability</div></div>
+    </div>`;
+
+  drawMatrix(type,mi/100,ic/100,p.color);
+  buildTabs(type,mi,ic,norm,p);
+  showView('view-results');
+}
+
+function drawMatrix(type,mi,ic,color){
+  const canvas=document.getElementById('matrix-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,pad=50;
+  ctx.clearRect(0,0,W,H);
+  const qW=(W-2*pad)/2,qH=(H-2*pad)/2;
+  const fills=[['#f0fdf4','#eef2ff'],['#fffbeb','#fef2f2']];
+  const labels=[['Greenhouse 🌱','Tournament 🏆'],['Credentialing 🔧','Repair Shop 🏥']];
+  const lColors=[['#059669','#4f46e5'],['#d97706','#dc2626']];
+  for(let r=0;r<2;r++) for(let c=0;c<2;c++){
+    ctx.fillStyle=fills[r][c];ctx.fillRect(pad+c*qW,pad+r*qH,qW,qH);
+    ctx.fillStyle=lColors[r][c];ctx.font='bold 11px system-ui,sans-serif';
+    ctx.fillText(labels[r][c],pad+c*qW+8,pad+r*qH+16);
+  }
+  ctx.strokeStyle='#d1d5db';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,H-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();
+  ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(W/2,pad);ctx.lineTo(W/2,H-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,H/2);ctx.lineTo(W-pad,H/2);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#9ca3af';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Mission Intensity →',W/2,H-8);
+  ctx.save();ctx.translate(13,H/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Institutional Capability →',0,0);ctx.restore();
+  const px=pad+mi*(W-2*pad);
+  const py=(H-pad)-ic*(H-2*pad);
+  ctx.beginPath();ctx.arc(px,py,16,0,Math.PI*2);ctx.fillStyle=color+'33';ctx.fill();
+  ctx.beginPath();ctx.arc(px,py,8,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+  ctx.font='18px serif';ctx.textAlign='center';
+  ctx.fillText(ENV_PROFILES[Object.keys(ENV_PROFILES).find(k=>ENV_PROFILES[k].color===color)].emoji,px,py-20);
+}
+
+function buildTabs(type,mi,ic,norm,p){
+  const tabs=[{id:'overview',label:'📋 Overview'},{id:'dimensions',label:'📊 Dimensions'},{id:'gaps',label:'⚠️ Gaps'},{id:'recs',label:'🎯 Recommendations'}];
+  const tabRow=document.getElementById('res-tabs');
+  tabRow.innerHTML='';
+  tabs.forEach((t,i)=>{
+    const b=document.createElement('button');
+    b.className='tab-btn '+(i===0?'':'inactive');
+    b.id='tab-'+t.id;b.style.background=i===0?p.color:'';b.style.color=i===0?'white':'';
+    b.textContent=t.label;
+    b.onclick=()=>showTab(t.id,type,mi,ic,norm,p);
+    tabRow.appendChild(b);
+  });
+  renderTabContent('overview',type,mi,ic,norm,p);
+}
+
+function showTab(id,type,mi,ic,norm,p){
+  document.querySelectorAll('.tab-btn').forEach(b=>{b.className='tab-btn inactive';b.style.background='';b.style.color='';});
+  const active=document.getElementById('tab-'+id);
+  if(active){active.className='tab-btn active';active.style.background=p.color;active.style.color='white';}
+  renderTabContent(id,type,mi,ic,norm,p);
+}
+
+function renderTabContent(id,type,mi,ic,norm,p){
+  const panel=document.getElementById('res-panel');panel.innerHTML='';
+  const instDisplay=selectedInst?selectedInst.name:'Your Institution';
+  const stateDisplay=selectedInst&&selectedInst.state&&STATE_NAMES[selectedInst.state]?` · ${STATE_NAMES[selectedInst.state]}`:'';
+  const typeDisplay=selectedInst&&selectedInst.type?` · ${selectedInst.type}`:'';
+
+  if(id==='overview'){
+    panel.innerHTML=`
+      ${selectedInst?`<div class="section-card" style="background:${p.bg};border-color:${p.border}">
+        <h3 style="color:${p.color}">🏫 ${instDisplay}</h3>
+        <p style="margin-top:4px">${stateDisplay.slice(3)}${typeDisplay}</p>
+      </div>`:''}
+      <div class="section-card"><h3>Institutional Profile</h3><p>${p.desc}</p></div>
+      <div class="section-card"><h3>💪 Institutional Strengths</h3><ul>${p.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      <div class="section-card" style="background:${p.bg};border-color:${p.border}">
+        <h3 style="color:${p.color}">📌 Comparable Institutions</h3>
+        <div>${p.examples.map(e=>`<span class="inst-chip">${e}</span>`).join('')}</div>
+      </div>`;
+  }
+  else if(id==='dimensions'){
+    const dims=[
+      {key:'mission',label:'Mission Clarity & Alignment',icon:'🧭'},
+      {key:'students',label:'Student Population Match',icon:'👥'},
+      {key:'rigor',label:'Academic Rigor & Curriculum',icon:'📚'},
+      {key:'capability',label:'Institutional Capability & Scaffolding',icon:'🏗️'},
+      {key:'faculty',label:'Faculty & Pedagogy',icon:'👩‍🏫'},
+      {key:'outcomes',label:'Outcomes & Mobility',icon:'📈'}
+    ];
+    let html='<div class="section-card"><h3>Dimension Scores</h3><p style="margin-bottom:16px;color:#6b7280;font-size:13px">Each dimension scored 0–100. Scores below 50 indicate significant development gaps.</p>';
+    dims.forEach(d=>{
+      const sc=norm[d.key]||0;
+      const fillColor=sc>=70?'#16a34a':sc>=50?'#d97706':'#dc2626';
+      html+=`<div class="gap-bar-wrap"><div class="gap-label"><span>${d.icon} ${d.label}</span><span style="font-weight:700;color:${fillColor}">${sc}%</span></div>
+        <div class="gap-track"><div class="gap-fill" style="width:${sc}%;background:${fillColor}"></div></div></div>`;
+    });
+    html+='</div>';
+    const diff=(norm.mission||50)-(norm.capability||50);
+    let gapMsg,gapClass='alert-blue';
+    if(diff>20){gapMsg=`<strong>⚠️ Mission-Capability Gap (+${diff} pts):</strong> Your stated mission intensity significantly exceeds your institutional capability — the "fantasy university" condition: promising more than your infrastructure can support.`;gapClass='alert-red';}
+    else if(diff<-20){gapMsg=`<strong>📊 Under-utilized Capability:</strong> Your institutional capability exceeds your stated mission intensity. You may have strong support infrastructure but are underserving students' potential.`;gapClass='alert-yellow';}
+    else{gapMsg=`<strong>✓ Reasonable Alignment:</strong> Your mission intensity and institutional capability are broadly aligned. Examine dimension-level gaps for specific improvement areas.`;gapClass='alert-green';}
+    html+=`<div class="alert-box ${gapClass}">${gapMsg}</div>`;
+    panel.innerHTML=html;
+  }
+  else if(id==='gaps'){
+    panel.innerHTML=`<div class="section-card"><h3>⚠️ Institutional Vulnerabilities</h3>
+      <p style="margin-bottom:14px;font-size:13px;color:#6b7280">These are the known structural risks for your environment archetype — areas where ${p.label} institutions most commonly underperform or create harm.</p>
+      <ul>${p.gaps.map(g=>`<li style="margin-bottom:10px">${g}</li>`).join('')}</ul></div>
+      <div class="alert-box alert-yellow"><strong>A note on categorization:</strong> This placement reflects your institution's <em>current</em> developmental state — not a permanent verdict. Institutions evolve. Use this as a starting point for honest internal dialogue, not a fixed identity.</div>`;
+  }
+  else if(id==='recs'){
+    let html=`<div class="section-card"><h3>🎯 Priority Recommendations for ${p.label}</h3>
+      <p style="margin-bottom:16px;font-size:13px;color:#6b7280">Sequenced by impact potential based on your profile. Each addresses a structural gap common to your environment archetype.</p>`;
+    const colors=['#4f46e5','#059669','#d97706','#dc2626'];
+    p.recs.forEach((r,i)=>{
+      html+=`<div class="priority-item">
+        <div class="priority-num" style="background:${colors[i]}22;color:${colors[i]}">${i+1}</div>
+        <div><strong style="color:#1f2937;font-size:14px">${r.title}</strong><p style="margin-top:4px;color:#4b5563;font-size:13px">${r.detail}</p></div>
+      </div>`;
+    });
+    html+='</div>';
+    const nextEnv=type==='RepairShop'?'Credentialing':type==='Greenhouse'?'Tournament':type==='Credentialing'?'Greenhouse':null;
+    if(nextEnv) html+=`<div class="alert-box alert-blue"><strong>Upward Mobility Path:</strong> As your institution develops greater capability and mission clarity, the natural next environment archetype to target is <strong>${nextEnv}</strong>. This requires intentional investment in the dimension gaps highlighted above — not cosmetic rebranding.</div>`;
+    panel.innerHTML=html;
+  }
+}
+
+// ─── VIEW MANAGEMENT ─────────────────────────────────────────────────────────
+function showView(id){
+  ['view-intro','view-survey','view-results'].forEach(v=>{
+    const el=document.getElementById(v);el.style.display='none';el.classList.remove('fade');
+  });
+  const el=document.getElementById(id);
+  el.style.display=id==='view-results'?'block':'';
+  setTimeout(()=>el.classList.add('fade'),10);
+}
+
+function retake(){
+  selectedInst=null;stateFilter='';
+  allAnswers=[];currentAnswer=null;
+  Object.keys(dimScores).forEach(k=>dimScores[k]=0);
+  Object.keys(dimCounts).forEach(k=>dimCounts[k]=0);
+  document.getElementById('inst-search').value='';
+  document.getElementById('inst-role').value='';
+  document.getElementById('inst-type-display').value='';
+  document.getElementById('inst-selected-display').style.display='none';
+  document.getElementById('state-filter').value='';
+  document.getElementById('result-count').textContent=`${INSTITUTIONS.length} institutions nationwide`;
+  showView('view-intro');
+}
+</script>
+</body>
+</html>

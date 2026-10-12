@@ -1,1701 +1,330 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fits &amp; Dreams — Viability Matrices</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Fits and Dreams</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap">
+
 <style>
-:root{
-  --paper:#F1F2EE; --panel:#FFFFFF; --panel-2:#F7F8F5;
-  --ink:#161C1A; --ink-2:#454E4B; --ink-3:#6C7672;
-  --rule:#CDD2CB; --rule-2:#E2E6DF;
-  --mark:#7C2B4B;
-  --focus:#2E5E7E;
-  --q-tr:#D7E3E8; --q-tl:#DFE5D6; --q-br:#EDE2D9; --q-bl:#E4DCE3;
-  --ok:#3D6B4E; --warn:#8A5A1B; --bad:#93382F;
-  --shadow:0 1px 1px rgba(22,28,26,.04), 0 10px 30px rgba(22,28,26,.06);
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{
-  margin:0; background:var(--paper); color:var(--ink);
-  font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  font-size:15.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3{font-family:'Instrument Serif',Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.005em;margin:0;line-height:1.1}
-.mono{font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace}
-a{color:var(--focus)}
-:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
-.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
-.muted{color:var(--ink-3)}
-.small{font-size:13.5px}
-hr.rule{border:none;border-top:1px solid var(--rule);margin:26px 0}
+  /* Portal layout: centered column, two audience cards side by side */
+  :root {
+    --bg:       #f7f5f0;
+    --bg-card:  #ffffff;
+    --fg:       #1a1814;
+    --fg-mid:   #5a5650;
+    --fg-dim:   #8a8680;
+    --accent:   #2d5a8e;
+    --accent-lt:#e8f0f9;
+    --rule:     #dedad4;
+    --student:  #2d5a8e;
+    --inst:     #6b3a7d;
+    --inst-lt:  #f3eef7;
+  }
 
-/* ---------- top bar ---------- */
-header.bar{border-bottom:1px solid var(--rule);background:var(--paper);position:sticky;top:0;z-index:40}
-.bar .inner{display:flex;align-items:center;gap:18px;padding:13px 0;max-width:1180px;margin:0 auto;padding-left:24px;padding-right:24px}
-.bar .mark{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.01em;white-space:nowrap}
-.bar .mark em{font-style:italic}
-.bar .spacer{flex:1}
-.bar nav{display:flex;gap:4px;flex-wrap:wrap}
-.tab{appearance:none;background:none;border:1px solid transparent;font:inherit;font-size:13.5px;
-  padding:6px 12px;border-radius:999px;cursor:pointer;color:var(--ink-2)}
-.tab:hover{background:var(--rule-2)}
-.tab[aria-current="true"]{background:var(--ink);color:var(--paper)}
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:       #14120f;
+      --bg-card:  #1e1c18;
+      --fg:       #f0ece4;
+      --fg-mid:   #a09b92;
+      --fg-dim:   #6a6560;
+      --accent:   #7aadd6;
+      --accent-lt:#1a2a3a;
+      --rule:     #2e2c28;
+      --student:  #7aadd6;
+      --inst:     #c49dd8;
+      --inst-lt:  #241a2c;
+      color-scheme: dark;
+    }
+  }
 
-/* ---------- hero / chooser ---------- */
-.hero{padding:56px 0 12px}
-.hero h1{font-size:clamp(38px,6.2vw,66px);max-width:16ch}
-.hero h1 em{font-style:italic;color:var(--mark)}
-.hero .lede{max-width:62ch;margin-top:18px;font-size:17px;color:var(--ink-2)}
-.chooser{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:34px 0 60px}
-.choice{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:22px;
-  cursor:pointer;text-align:left;font:inherit;color:inherit;transition:border-color .18s, transform .18s, box-shadow .18s}
-.choice:hover{border-color:var(--ink);box-shadow:var(--shadow);transform:translateY(-2px)}
-.choice h2{font-size:27px;margin:10px 0 6px}
-.choice p{margin:0;color:var(--ink-2);font-size:14.5px}
-.choice .thumb{margin:16px 0 4px}
-.choice .go{margin-top:16px;font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--mark);letter-spacing:.04em}
+  :root[data-theme="dark"] {
+    --bg:       #14120f;
+    --bg-card:  #1e1c18;
+    --fg:       #f0ece4;
+    --fg-mid:   #a09b92;
+    --fg-dim:   #6a6560;
+    --accent:   #7aadd6;
+    --accent-lt:#1a2a3a;
+    --rule:     #2e2c28;
+    --student:  #7aadd6;
+    --inst:     #c49dd8;
+    --inst-lt:  #241a2c;
+    color-scheme: dark;
+  }
 
-/* ---------- layout: plate + panel ---------- */
-.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:30px;padding:26px 0 70px;align-items:start}
-.plate{position:sticky;top:74px}
-.plate-card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:16px}
-.plate-card h3{font-size:19px;margin-bottom:2px}
-.plate-note{font-size:12.5px;color:var(--ink-3);margin-top:10px;line-height:1.45}
-.stage{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:26px}
-.stage + .stage{margin-top:18px}
-.stage h2{font-size:26px;margin-bottom:8px}
-.stage h3{font-size:19px;margin:22px 0 8px}
-.stage p{margin:10px 0}
+  *, *::before, *::after { box-sizing: border-box; }
 
-/* ---------- steps ---------- */
-.steps{display:flex;gap:0;list-style:none;padding:0;margin:0 0 22px;flex-wrap:wrap}
-.steps li{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--ink-3);padding:5px 12px 5px 0;position:relative}
-.steps li::after{content:"/";margin-left:12px;color:var(--rule)}
-.steps li:last-child::after{content:""}
-.steps li[data-on="1"]{color:var(--mark)}
-.steps li[data-done="1"]{color:var(--ink-2)}
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    margin: 0;
+    padding-inline: 24px;
+    padding-block: 0;
+  }
 
-/* ---------- form controls ---------- */
-label.fld{display:block;margin:14px 0 0}
-label.fld .lab{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
-input[type=text],input[type=number],input[type=password],select,textarea{
-  width:100%;padding:10px 12px;border:1px solid var(--rule);border-radius:3px;background:#fff;
-  font:inherit;font-size:15px;color:var(--ink)}
-textarea{min-height:110px;resize:vertical;line-height:1.5}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:0;border-color:var(--focus)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
-  font:inherit;font-weight:600;font-size:14.5px;padding:11px 20px;border-radius:3px;cursor:pointer;transition:.15s}
-.btn:hover{background:#000;border-color:#000}
-.btn[disabled]{opacity:.35;cursor:not-allowed}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
-.btn.ghost:hover{background:var(--panel-2);border-color:var(--ink)}
-.btn.quiet{background:transparent;color:var(--ink-2);border-color:transparent;padding:11px 10px}
-.btn.quiet:hover{background:var(--rule-2);color:var(--ink)}
-.btnrow{display:flex;gap:10px;align-items:center;margin-top:24px;flex-wrap:wrap}
-.btnrow .spacer{flex:1}
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding-block: 56px 72px;
+  }
 
-/* ---------- likert items ---------- */
-.item{padding:16px 0;border-top:1px solid var(--rule-2)}
-.item:first-of-type{border-top:none}
-.item .q{display:flex;gap:12px;align-items:baseline}
-.item .n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-3);flex:none;width:2.6em;padding-top:3px}
-.item .txt{font-size:16px;line-height:1.4}
-.scale{display:flex;gap:6px;margin:12px 0 0 3.4em;flex-wrap:wrap;align-items:center}
-.pip{appearance:none;border:1px solid var(--rule);background:#fff;font:inherit;font-size:12.5px;
-  padding:7px 0;width:64px;text-align:center;border-radius:3px;cursor:pointer;color:var(--ink-2);transition:.12s;line-height:1.2}
-.pip:hover{border-color:var(--ink-2)}
-.pip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-.pip.skip{width:auto;padding:7px 12px;color:var(--ink-3);border-style:dashed}
-.pip.skip[aria-pressed="true"]{background:var(--rule-2);color:var(--ink-2);border-color:var(--ink-3);border-style:dashed}
-.scale-ends{display:flex;justify-content:space-between;margin:0 0 8px 3.4em;max-width:344px;
-  font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
-.progress{height:2px;background:var(--rule-2);margin:0 0 18px;position:relative;overflow:hidden}
-.progress i{position:absolute;left:0;top:0;bottom:0;background:var(--mark);transition:width .3s ease}
+  /* Header */
+  .site-header {
+    text-align: center;
+    padding-block-end: 48px;
+    border-bottom: 1px solid var(--rule);
+    margin-block-end: 52px;
+  }
 
-/* ---------- results ---------- */
-.verdict{border:1px solid var(--ink);border-radius:4px;padding:20px 22px;margin:6px 0 22px;background:var(--panel-2)}
-.verdict .k{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
-.verdict h2{font-size:34px;margin:6px 0 2px}
-.verdict .conf{font-size:13.5px;color:var(--ink-2);margin-top:8px}
-.bands{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
-.band{border:1px solid var(--rule);border-radius:3px;padding:13px 15px;background:#fff}
-.band .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
-.band .v{font-family:'Instrument Serif',serif;font-size:26px;margin-top:2px}
-.band .n{font-size:12.5px;color:var(--ink-3);margin-top:3px}
-.dom{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--rule-2)}
-.dom:first-child{border-top:none}
-.dom .name{flex:1;font-size:14.5px}
-.dom .bar{width:150px;height:6px;background:var(--rule-2);border-radius:99px;overflow:hidden;flex:none}
-.dom .bar i{display:block;height:100%;background:var(--ink-2)}
-.dom .tag{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;width:9.5em;text-align:right;flex:none;color:var(--ink-3)}
-.dom[data-lv="high"] .bar i{background:var(--ok)}
-.dom[data-lv="mid"] .bar i{background:var(--warn)}
-.dom[data-lv="low"] .bar i{background:var(--bad)}
-.callout{border-left:3px solid var(--mark);padding:2px 0 2px 16px;margin:20px 0;color:var(--ink-2)}
-.callout strong{color:var(--ink)}
-.narr{white-space:pre-wrap}
-.tag-inline{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;
-  text-transform:uppercase;padding:2px 7px;border:1px solid var(--rule);border-radius:2px;color:var(--ink-3);vertical-align:middle}
-.tag-inline[data-src="live"]{border-color:var(--ok);color:var(--ok)}
-.tag-inline[data-src="baked"]{border-color:var(--warn);color:var(--warn)}
-.tag-inline[data-src="entered"]{border-color:var(--focus);color:var(--focus)}
+  .eyebrow {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    margin-block-end: 14px;
+  }
 
-/* ---------- institution list ---------- */
-.plotted{list-style:none;padding:0;margin:14px 0 0}
-.plotted li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--rule-2);font-size:14px}
-.plotted li:first-child{border-top:none}
-.swatch{width:19px;height:19px;border-radius:99px;flex:none;display:flex;align-items:center;
-  justify-content:center;font-size:11px;font-weight:700;color:#12202C}
-.plotted .qd{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-3);margin-left:auto;text-align:right}
-.empty{color:var(--ink-3);font-size:13.5px;padding:10px 0}
+  .site-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    font-weight: 700;
+    line-height: 1.1;
+    text-wrap: balance;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
 
-/* ---------- misc ---------- */
-details.note{border:1px solid var(--rule);border-radius:3px;padding:12px 14px;margin:16px 0;background:var(--panel-2)}
-details.note summary{cursor:pointer;font-size:13.5px;font-weight:600}
-details.note .body{margin-top:10px;font-size:14px;color:var(--ink-2)}
-.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.pill{appearance:none;border:1px solid var(--rule);background:#fff;font:inherit;font-size:14px;
-  padding:10px 15px;border-radius:3px;cursor:pointer;text-align:left}
-.pill:hover{border-color:var(--ink-2)}
-.pill[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.pill .sub{display:block;font-size:12px;opacity:.7;margin-top:2px}
-.statusline{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3);margin-top:12px;min-height:1.4em}
-.spin{display:inline-block;width:9px;height:9px;border:1.5px solid var(--rule);border-top-color:var(--mark);
-  border-radius:99px;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:6px}
-@keyframes sp{to{transform:rotate(360deg)}}
-.ell{transform-origin:center;transform-box:fill-box}
-.ell-in{animation:pop .5s cubic-bezier(.2,.9,.3,1) both}
-@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+  .site-subtitle {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--fg-mid);
+    max-width: 52ch;
+    margin: 0 auto 24px;
+    text-wrap: balance;
+  }
 
-/* ---------- environment rows (Figure 6) ---------- */
-.envrow{border-left:3px solid var(--rule);padding:12px 0 12px 15px;margin:14px 0}
-.envhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.envname{font-family:'Instrument Serif',Georgia,serif;font-size:21px}
-.fitbadge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;
-  text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid var(--rule);color:var(--ink-3)}
-.envnote{font-size:14.5px;color:var(--ink-2);margin-top:5px}
-.envserves{font-size:13px;color:var(--ink-3);margin-top:5px}
-.envrow[data-fit="strong"]{border-left-color:var(--ok)}
-.envrow[data-fit="strong"] .fitbadge{border-color:var(--ok);color:var(--ok)}
-.envrow[data-fit="workable"]{border-left-color:var(--warn)}
-.envrow[data-fit="workable"] .fitbadge{border-color:var(--warn);color:var(--warn)}
-.envrow[data-fit="weak"]{border-left-color:var(--rule)}
-.envrow[data-fit="harmful"]{border-left-color:var(--bad)}
-.envrow[data-fit="harmful"] .fitbadge{border-color:var(--bad);color:var(--bad)}
-.fitline{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
-.fitline[data-fit="strong"]{color:var(--ok)}
-.fitline[data-fit="workable"]{color:var(--warn)}
-.fitline[data-fit="weak"]{color:var(--bad)}
-.dom[data-lv="na"] .bar i{background:var(--rule)}
-.lab{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
-.verdict h2{line-height:1.05}
-footer.foot{border-top:1px solid var(--rule);padding:24px 0 50px;color:var(--ink-3);font-size:13px}
-[hidden]{display:none !important}
+  .authors {
+    font-size: 0.88rem;
+    color: var(--fg-dim);
+    letter-spacing: 0.03em;
+  }
 
-@media (prefers-reduced-motion: reduce){
-  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
-}
-@media (max-width:900px){
-  .split{grid-template-columns:1fr;gap:20px}
-  .plate{position:static}
-  .chooser{grid-template-columns:1fr}
-  .row,.row-3,.bands{grid-template-columns:1fr}
-}
+  /* Tool cards */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-block-end: 52px;
+  }
+
+  @media (max-width: 580px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 32px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .card-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-block-end: 10px;
+  }
+
+  .card--student .card-eyebrow { color: var(--student); }
+  .card--inst    .card-eyebrow { color: var(--inst); }
+
+  .card-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .card-desc {
+    font-size: 0.93rem;
+    color: var(--fg-mid);
+    line-height: 1.55;
+    margin-block-end: 24px;
+    flex: 1;
+  }
+
+  .matrix-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-block-end: 8px;
+  }
+
+  .quadrants {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-block-end: 24px;
+  }
+
+  .q {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 2px;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .card--student .q { background: var(--accent-lt); color: var(--student); }
+  .card--inst    .q { background: var(--inst-lt);   color: var(--inst); }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 3px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 0.12s ease, transform 0.1s ease;
+    border: none;
+  }
+
+  .btn:hover  { opacity: 0.85; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn--student {
+    background: var(--student);
+    color: #fff;
+  }
+
+  .btn--inst {
+    background: var(--inst);
+    color: #fff;
+  }
+
+  /* About section */
+  .about {
+    border-top: 1px solid var(--rule);
+    padding-block-start: 44px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 580px) {
+    .about { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  .about-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+
+  .about p {
+    font-size: 0.92rem;
+    color: var(--fg-mid);
+    line-height: 1.65;
+    margin: 0 0 10px;
+  }
+
+  .about p:last-child { margin-block-end: 0; }
+
+  /* Footer */
+  .site-footer {
+    margin-block-start: 56px;
+    padding-block-start: 24px;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--fg-dim);
+    letter-spacing: 0.03em;
+  }
 </style>
-</head>
-<body>
-<header class="bar">
-  <div class="inner">
-    <div class="mark"><em>Fits &amp; Dreams</em> — Viability Matrices</div>
-    <div class="spacer"></div>
-    <nav>
-      <button class="tab" data-go="home" aria-current="true">Overview</button>
-      <button class="tab" data-go="student">Student matrix</button>
-      <button class="tab" data-go="inst">Institutional matrix</button>
-      <button class="tab" data-go="setup">Setup</button>
-    </nav>
-  </div>
-</header>
 
-<!-- ============================== HOME ============================== -->
-<main id="v-home" data-view>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">Two diagnostics · one geometry</div>
-      <h1>Students arrive different. Institutions must <em>respond differently</em>.</h1>
-      <p class="lede">Both frameworks plot on the same plane: two axes, four quadrants, one point whose
-        position is an estimate rather than a verdict. Run either one. The point comes back as an ellipse,
-        because the width of the ellipse is part of the finding.</p>
-    </section>
+<div class="wrapper">
 
-    <div class="chooser">
-      <button class="choice" data-go="student">
-        <div class="eyebrow">Volume 1 · Chapter 6</div>
-        <div class="thumb"><svg id="thumb-student" viewBox="0 0 300 215" aria-hidden="true" style="width:100%;height:auto"></svg></div>
-        <h2>Student Viability Matrix</h2>
-        <p>A self-report developmental placement. Student Intelligence against Developmental Readiness,
-          returning a current state — Competitor, Explorer, Practitioner, At-Risk — with the mobility paths
-          out of it.</p>
-        <div class="go">Run the assessment →</div>
-      </button>
+  <header class="site-header">
+    <p class="eyebrow">Companion Assessment Tools</p>
+    <h1 class="site-title">Fits and Dreams</h1>
+    <p class="site-subtitle">
+      Two interactive assessments drawn from the Student Viability Framework — one for students exploring their college fit, one for institutions examining their learning environment.
+    </p>
+    <p class="authors">Thomas Mennella &amp; James &nbsp;·&nbsp; Western New England University</p>
+  </header>
 
-      <button class="choice" data-go="inst">
-        <div class="eyebrow">Volume 3 · Chapter 1</div>
-        <div class="thumb"><svg id="thumb-inst" viewBox="0 0 300 215" aria-hidden="true" style="width:100%;height:auto"></svg></div>
-        <h2>Institutional Viability Matrix</h2>
-        <p>Resources against mission integrity. Public data carries most of the first axis. The second has no
-          public dataset at all, which is the argument for having it. Plot several institutions together, then
-          cross-walk to archetype and learning environment.</p>
-        <div class="go">Place an institution →</div>
-      </button>
+  <div class="cards">
+
+    <div class="card card--student">
+      <p class="card-eyebrow">For Students</p>
+      <h2 class="card-title">Student Viability Assessment</h2>
+      <p class="card-desc">
+        A 40-question self-assessment that measures Academic Readiness and Developmental Readiness, placing you on the Student Viability Matrix and surfacing a detailed archetype profile.
+      </p>
+      <p class="matrix-label">Student archetypes</p>
+      <div class="quadrants">
+        <div class="q">Explorer</div>
+        <div class="q">Competitor</div>
+        <div class="q">Pragmatist</div>
+        <div class="q">Aspirant</div>
+      </div>
+      <a class="btn btn--student" href="student_viability.html">Open Student Assessment →</a>
     </div>
 
-    <hr class="rule">
-    <section style="padding-bottom:60px">
-      <h3 style="font-size:22px">Where the two frameworks meet</h3>
-      <p class="muted" style="max-width:74ch">An institution's quadrant determines which of the four learning
-        environments it can run honestly, and each environment is built to serve a particular student type.
-        So the institutional result ends where the student one begins: with a plain statement of which students
-        this institution is actually equipped to serve, and which it would be taking money from under false
-        pretences.</p>
-      <p class="muted" style="max-width:74ch">Both instruments are provisional. The student assessment is
-        self-report and takes cognitive proxies at face value; it is not clinical, and it measures nothing about
-        a person's worth. The institutional assessment mixes public financial data with judgments the user
-        supplies about their own institution, and is only as honest as those answers. Nothing is stored.
-        Everything runs in this browser tab and disappears when you close it.</p>
-    </section>
-  </div>
-  <footer class="foot"><div class="wrap">Conference demonstration build · frameworks from <em>Fits and Dreams</em>, Vols. 1 &amp; 3.</div></footer>
-</main>
-
-<!-- ============================== STUDENT ============================== -->
-<main id="v-student" data-view hidden>
-  <div class="wrap">
-    <div class="split">
-      <div class="plate">
-        <div class="plate-card">
-          <div class="eyebrow">Volume 1 · Figure 2</div>
-          <h3>Student Viability Matrix</h3>
-          <svg id="mx-student" viewBox="0 0 620 500" style="width:100%;height:auto;display:block;margin-top:6px"></svg>
-          <p class="plate-note" id="student-plate-note">Answer the sections on the right and the current
-            position appears here. The ellipse is the estimate's uncertainty — a short form and self-reported
-            evidence widen it.</p>
-        </div>
+    <div class="card card--inst">
+      <p class="card-eyebrow">For Administrators</p>
+      <h2 class="card-title">Institutional Viability Assessment</h2>
+      <p class="card-desc">
+        A structured self-assessment for college and university leaders. Search 300+ institutions nationwide, complete a survey across six dimensions, and see your placement on the Institutional Viability Matrix.
+      </p>
+      <p class="matrix-label">Institutional environments</p>
+      <div class="quadrants">
+        <div class="q">Greenhouse</div>
+        <div class="q">Tournament</div>
+        <div class="q">Repair Shop</div>
+        <div class="q">Credentialing</div>
       </div>
-
-      <div>
-        <ol class="steps" id="student-steps">
-          <li data-s="consent">Orientation</li>
-          <li data-s="mode">Form</li>
-          <li data-s="intel">Academic proxy</li>
-          <li data-s="ready">Readiness</li>
-          <li data-s="result">Placement</li>
-        </ol>
-
-        <section class="stage" data-step="consent">
-          <h2>Before you start</h2>
-          <p>This is a <strong>self-report developmental assessment</strong>, not a clinical test, an IQ test, or
-            an admissions instrument. It estimates where someone is right now on two dimensions and describes
-            what kind of environment tends to help from there.</p>
-          <p class="callout">Results are <strong>approximate</strong> and meant for reflection. They describe a
-            current state, not a fixed trait, and the same person can land in a different quadrant a year from
-            now.<br><br>You can <strong>skip any question</strong>. Skipping costs precision, not access — the
-            estimate widens and says so.<br><br>Nothing is <strong>stored or transmitted</strong> except, if a
-            key is configured, the anonymous summary sent to write the interpretation.</p>
-          <label class="fld" style="margin-top:22px">
-            <span style="display:flex;gap:10px;align-items:flex-start;font-size:15.5px">
-              <input type="checkbox" id="consent-box" style="width:auto;margin-top:4px">
-              <span>I understand this is provisional, self-reported, and not a diagnosis.</span>
-            </span>
-          </label>
-          <div class="btnrow">
-            <button class="btn" id="consent-next" disabled>Continue</button>
-            <button class="btn quiet" data-go="home">Back to overview</button>
-          </div>
-        </section>
-
-        <section class="stage" data-step="mode" hidden>
-          <h2>Pick a length</h2>
-          <p>Both forms cover the same eight dimensions of developmental readiness. The full form asks four
-            questions per dimension instead of two, which narrows the estimate.</p>
-          <div class="pill-row" style="margin-top:18px">
-            <button class="pill" data-mode="short" style="flex:1">Short form
-              <span class="sub">16 questions · about 3 minutes · wider estimate</span></button>
-            <button class="pill" data-mode="full" style="flex:1">Full form
-              <span class="sub">32 questions · about 10 minutes · tighter estimate</span></button>
-          </div>
-          <div class="btnrow">
-            <button class="btn" id="mode-next" disabled>Continue</button>
-            <button class="btn quiet" data-back="consent">Back</button>
-          </div>
-        </section>
-
-        <section class="stage" data-step="intel" hidden>
-          <h2>Academic proxy</h2>
-          <p>This stands in, roughly, for the horizontal axis. A test score is noisy at the individual level and
-            says nothing about creativity, judgment, or wisdom — it's used here only because it's the proxy most
-            people already have a number for.</p>
-          <div class="pill-row">
-            <button class="pill" data-src-choice="sat">SAT score</button>
-            <button class="pill" data-src-choice="act">ACT score</button>
-            <button class="pill" data-src-choice="none">No test score</button>
-          </div>
-
-          <div id="intel-sat" hidden>
-            <div class="row">
-              <label class="fld"><span class="lab">Total score (400–1600)</span>
-                <input type="number" id="sat-total" min="400" max="1600" step="10" placeholder="e.g. 1210"></label>
-              <label class="fld"><span class="lab">Or by section</span>
-                <div class="row" style="gap:8px">
-                  <input type="number" id="sat-ebrw" min="200" max="800" step="10" placeholder="EBRW">
-                  <input type="number" id="sat-math" min="200" max="800" step="10" placeholder="Math">
-                </div></label>
-            </div>
-          </div>
-          <div id="intel-act" hidden>
-            <label class="fld" style="max-width:280px"><span class="lab">Composite (1–36)</span>
-              <input type="number" id="act-comp" min="1" max="36" step="1" placeholder="e.g. 25"></label>
-          </div>
-          <div id="intel-none" hidden>
-            <p class="small muted">Without a score the estimate leans on coursework and self-description, and the
-              horizontal uncertainty widens accordingly.</p>
-            <div class="row">
-              <label class="fld"><span class="lab">AP / IB / dual-enrolment exams taken</span>
-                <select id="ap-taken">
-                  <option value="">Select</option><option value="0">None</option><option value="1">1–2</option>
-                  <option value="2">3–4</option><option value="3">5 or more</option></select></label>
-              <label class="fld"><span class="lab">Of those, scored 3+ (or equivalent)</span>
-                <select id="ap-passed">
-                  <option value="">Select</option><option value="0">None</option><option value="1">1–2</option>
-                  <option value="2">3–4</option><option value="3">5 or more</option></select></label>
-            </div>
-            <div id="intel-selfitems"></div>
-          </div>
-          <div class="btnrow">
-            <button class="btn" id="intel-next">Continue</button>
-            <button class="btn quiet" data-back="mode">Back</button>
-            <span class="spacer"></span>
-            <button class="btn quiet" id="intel-skip">Skip this section</button>
-          </div>
-        </section>
-
-        <section class="stage" data-step="ready" hidden>
-          <h2>Developmental readiness</h2>
-          <p class="small muted" style="margin-bottom:18px">Answer as you actually are, not as you'd like to be.
-            There are no correct answers, and no scored total is reported — only bands.</p>
-          <div class="progress"><i id="ready-prog" style="width:0%"></i></div>
-          <div id="ready-items"></div>
-          <div class="btnrow">
-            <button class="btn" id="ready-next">Continue</button>
-            <button class="btn quiet" id="ready-back">Back</button>
-            <span class="spacer"></span>
-            <span class="small muted" id="ready-count"></span>
-          </div>
-        </section>
-
-        <section class="stage" data-step="result" hidden>
-          <div id="student-result"></div>
-          <div class="btnrow">
-            <button class="btn ghost" id="student-restart">Start over</button>
-            <button class="btn quiet" data-go="inst">Try the institutional matrix →</button>
-          </div>
-        </section>
-      </div>
+      <a class="btn btn--inst" href="institutional_viability.html">Open Institutional Assessment →</a>
     </div>
+
   </div>
-</main>
 
-<!-- ============================== INSTITUTION ============================== -->
-<main id="v-inst" data-view hidden>
-  <div class="wrap">
-    <div class="split">
-      <div class="plate">
-        <div class="plate-card">
-          <div class="eyebrow">Volume 3 · Figure 3</div>
-          <h3>Institutional Viability Matrix</h3>
-          <svg id="mx-inst" viewBox="0 0 620 500" style="width:100%;height:auto;display:block;margin-top:6px"></svg>
-          <ul class="plotted" id="inst-list"><li class="empty">No institutions plotted yet.</li></ul>
-          <div class="btnrow" style="margin-top:14px">
-            <button class="btn ghost" id="inst-clear">Clear the matrix</button>
-          </div>
-          <p class="plate-note">Institutions stay on the plate until cleared, so several can be compared at
-            once. Ellipse size reflects how much of the input was measured rather than estimated.</p>
-        </div>
-      </div>
-
-      <div>
-        <section class="stage">
-          <h2>Place an institution</h2>
-          <p>Two axes. <strong>Resources</strong> compresses the five forms of institutional capital into one
-            blunt metric. <strong>Mission integrity</strong> asks whether that capital gets deployed in service
-            of a stated purpose — a genuinely independent question, since a wealthy institution can drift more
-            easily than a poor one, wealth having removed the discipline scarcity otherwise imposes.</p>
-
-          <label class="fld"><span class="lab">Institution name</span>
-            <input type="text" id="inst-name" list="inst-known" placeholder="Start typing, or enter any institution" autocomplete="off"></label>
-          <datalist id="inst-known"></datalist>
-          <div class="btnrow" style="margin-top:14px">
-            <button class="btn ghost" id="inst-lookup">Look up public data</button>
-            <button class="btn quiet" id="load-ashcombe">Load the worked case</button>
-            <span class="statusline" id="inst-status" style="margin:0"></span>
-          </div>
-        </section>
-
-        <section class="stage">
-          <h3 style="margin-top:0">Axis 1 — Resources, as five capitals</h3>
-          <p class="small muted">Financial capital is the one form public data can reach. Leave anything blank
-            that you don't know; blanks are dropped from the estimate and widen the ellipse rather than counting
-            as zero.</p>
-          <div id="fin-fields"></div>
-          <h3>The other four capitals</h3>
-          <p class="small muted">These aren't measurable from outside, so they're your judgment — 1 is thin,
-            5 is deep. Each carries the same weight as the financial block.</p>
-          <div id="cap-sliders"></div>
-        </section>
-
-        <section class="stage">
-          <h3 style="margin-top:0">Axis 2 — Mission integrity</h3>
-          <p class="small muted">Not whether the mission is admirable. Whether decisions track it.</p>
-          <div id="mi-items"></div>
-          <label class="fld" style="margin-top:20px"><span class="lab">Mission statement, and two or three recent significant decisions</span>
-            <textarea id="mi-text" placeholder="Paste the mission statement, then describe recent decisions — a programme launched or closed, a capital project, an enrolment target, a partnership. Specific and unflattering is more useful than polished."></textarea></label>
-          <p class="small muted">With an API key configured, this text is read for the gap between stated purpose
-            and revealed priority, and can move the mission-integrity estimate by a small amount in either
-            direction. Without one, only the questions above count.</p>
-        </section>
-
-        <section class="stage">
-          <h3 style="margin-top:0">What the institution says it is</h3>
-          <p class="small muted">Optional, and the most interesting part. The quadrant tells you what this
-            institution can sustain; these two answers say what it's currently reaching for. The gap between
-            them is where the next decade's problems get written.</p>
-          <div class="lab" style="margin-top:16px">Strategic archetype it identifies with</div>
-          <div class="pill-row" id="arch-pills"></div>
-          <div class="lab" style="margin-top:16px">Learning environment it is currently investing in</div>
-          <div class="pill-row" id="env-pills"></div>
-          <div class="btnrow">
-            <button class="btn" id="inst-place">Place on the matrix</button>
-            <button class="btn quiet" id="inst-reset-form">Reset this form</button>
-            <span class="statusline" id="inst-place-status" style="margin:0"></span>
-          </div>
-        </section>
-
-        <section class="stage" id="inst-result-card" hidden>
-          <div id="inst-result"></div>
-        </section>
-      </div>
+  <section class="about">
+    <div>
+      <h3 class="about-heading">The Student Viability Framework</h3>
+      <p>The FAD framework maps students across two independent axes — Academic Readiness and Developmental Readiness — to identify where they stand and what kind of college environment is most likely to help them thrive.</p>
+      <p>The student assessment begins with 20 fluid-reasoning items, then moves to 20 self-report questions on motivation, independence, and self-awareness. Results include an archetype profile and, optionally, a curated set of institution recommendations.</p>
     </div>
-  </div>
-</main>
-
-<!-- ============================== SETUP ============================== -->
-<main id="v-setup" data-view hidden>
-  <div class="wrap" style="max-width:760px">
-    <section class="stage" style="margin-top:30px">
-      <h2>Setup</h2>
-      <p>Everything here works without any keys — placement, scoring, cross-walks, and the written
-        interpretation all run on deterministic rules in this file. Keys add two things: live public data for
-        institutions, and an interpretation composed by Claude rather than assembled from templates.</p>
-
-      <label class="fld"><span class="lab">Anthropic API key — optional</span>
-        <input type="password" id="k-anthropic" placeholder="sk-ant-..." autocomplete="off"></label>
-      <p class="small muted">Held in memory for this tab only and sent directly to api.anthropic.com from your
-        browser. Never saved to disk, never sent anywhere else. If this page is running inside Claude, leave it
-        blank — calls work without it.</p>
-      <label class="fld" style="max-width:340px"><span class="lab">Model</span>
-        <input type="text" id="k-model" value="claude-sonnet-4-6"></label>
-
-      <hr class="rule">
-
-      <label class="fld"><span class="lab">api.data.gov key — optional</span>
-        <input type="password" id="k-scorecard" placeholder="DEMO_KEY" autocomplete="off"></label>
-      <p class="small muted">For College Scorecard enrolment-trend lookups. Free and instant at
-        api.data.gov/signup. <code>DEMO_KEY</code> is used if blank and works for a handful of calls before it
-        rate-limits. The ProPublica 990 layer needs no key.</p>
-
-      <hr class="rule">
-      <h3 style="font-size:20px">Fallback behaviour</h3>
-      <p class="small muted">If a lookup fails — no key, no network, a captive portal — the institution falls
-        back to a built-in snapshot covering 23 New England institutions drawn from
-        <span class="mono">thomasmennella/higheredanalysis</span>, and then to whatever you type in. Every
-        displayed value is tagged <span class="tag-inline" data-src="live">live</span>
-        <span class="tag-inline" data-src="baked">stored</span> or
-        <span class="tag-inline" data-src="entered">entered</span>, so provenance is never ambiguous.</p>
-      <div class="btnrow"><button class="btn ghost" id="test-claude">Test the Claude connection</button>
-        <span class="statusline" id="setup-status" style="margin:0"></span></div>
-    </section>
-  </div>
-</main>
-<script>
-"use strict";
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
-const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-/* ===================== READINESS ITEM BANK ===================== */
-/* r:1 = reverse scored. core:1 = included in the short form. */
-const DOMAINS = [
-  {id:"ef",  name:"Executive function",        blurb:"planning, sequencing, follow-through"},
-  {id:"er",  name:"Emotional regulation",      blurb:"recovery from setback, tolerance for stress"},
-  {id:"ag",  name:"Agency and self-efficacy",  blurb:"expectation of influence over outcomes"},
-  {id:"so",  name:"Social fluency",            blurb:"forming and repairing working relationships"},
-  {id:"nav", name:"Institutional navigation",  blurb:"reading unwritten rules and finding resources"},
-  {id:"per", name:"Persistence",               blurb:"sustained effort past the interesting part"},
-  {id:"mat", name:"Responsibility and horizon",blurb:"obligations kept, consequences anticipated"},
-  {id:"voc", name:"Vocational identity",       blurb:"clarity about direction and next step"}
-];
-
-const ITEMS = [
-  {d:"ef", core:1, t:"I break large assignments into steps and start before the deadline is close."},
-  {d:"ef", core:1, r:1, t:"I lose track of what I've committed to."},
-  {d:"ef", t:"I can estimate how long a piece of work will take and plan around it."},
-  {d:"ef", r:1, t:"When several things are due at once, I freeze rather than pick an order."},
-
-  {d:"er", core:1, t:"When something goes badly, I can settle myself and get back to work the same day."},
-  {d:"er", core:1, r:1, t:"One piece of bad news can derail the rest of my day."},
-  {d:"er", t:"I can name what I'm feeling when I'm upset, rather than just feeling bad."},
-  {d:"er", r:1, t:"I avoid things I might be visibly bad at in front of other people."},
-
-  {d:"ag", core:1, t:"When I decide to learn something difficult, I expect to get there eventually."},
-  {d:"ag", core:1, r:1, t:"How well I do comes down mostly to luck, or to who's teaching."},
-  {d:"ag", t:"I can usually find a way around an obstacle without being told how."},
-  {d:"ag", t:"When something isn't working, I change my approach rather than repeat it harder."},
-
-  {d:"so", core:1, t:"I can start and hold a conversation with someone I don't know."},
-  {d:"so", core:1, r:1, t:"Working in a group of strangers makes me go quiet."},
-  {d:"so", t:"I notice when I've upset someone, and I do something about it."},
-  {d:"so", t:"There are people I can call on when things get hard."},
-
-  {d:"nav", core:1, t:"I'd be comfortable emailing a professor or a manager with a question."},
-  {d:"nav", core:1, t:"When I need something from an organisation, I can work out who to ask."},
-  {d:"nav", t:"I can read a syllabus, handbook, or contract and tell what actually matters in it."},
-  {d:"nav", r:1, t:"In a new setting I'm often the last to work out how things really run."},
-
-  {d:"per", core:1, t:"I finish what I start, even after it stops being interesting."},
-  {d:"per", core:1, r:1, t:"I move on to a new goal whenever a more interesting one appears."},
-  {d:"per", t:"Setbacks make me work harder rather than pull back."},
-  {d:"per", t:"I've stuck with something difficult for more than a year."},
-
-  {d:"mat", core:1, t:"I keep commitments to other people even when it costs me something."},
-  {d:"mat", core:1, t:"I think about how this month's choices affect me a year from now."},
-  {d:"mat", t:"I manage money, appointments, and paperwork without someone reminding me."},
-  {d:"mat", t:"When something is my fault, I say so rather than explain it away."},
-
-  {d:"voc", core:1, t:"I have a reasonably clear sense of the kind of work I want to do."},
-  {d:"voc", core:1, r:1, t:"My sense of direction changes every few months."},
-  {d:"voc", t:"I know what the next concrete step toward that work would be."},
-  {d:"voc", t:"I can describe what I'm good at in specific terms, not general ones."}
-];
-
-const SELF_ITEMS = [
-  {t:"I pick up new abstract ideas quickly compared with people around me."},
-  {t:"Dense reading — technical, theoretical, or unfamiliar — is manageable for me."},
-  {r:1, t:"I struggle to follow explanations that don't come with a concrete example."}
-];
-
-const RANDO_ITEMS = [
-  {t:"I've built, made, or run something substantial that nobody assigned to me."},
-  {t:"I lose interest in things the moment they become routine, even things I'm good at."},
-  {t:"I'd rather do it my own way and take the consequences than follow a process I think is wrong."}
-];
-
-const LIKERT = ["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"];
-
-/* ===================== STUDENT QUADRANTS ===================== */
-const STUDENT_Q = {
-  competitor:{
-    name:"Competitors", where:"tr",
-    line:"High student intelligence, high developmental readiness.",
-    college:"Competitors are what selective institutions are already built for, so the environment mostly works without adjustment. The risk isn't failure — it's that high capital masks strain until it becomes burnout, or that achievement gets pursued for its own sake long after it stopped meaning anything.",
-    helps:["Selective, intellectually demanding programmes with real intellectual stakes","Research, fellowships, and work where the ceiling is set by the person and not the syllabus","Mentors willing to ask why, not only how well","Environments with an explicit norm against overwork"],
-    stalls:["Programmes pitched several notches below the person's actual level","Cultures where comparison is the primary social currency","Loads that treat capacity as an invitation"],
-    task:"Sustainability. The question is no longer whether the work can be done but whether it can be done for forty years without hollowing out."
-  },
-  explorer:{
-    name:"Explorers", where:"br",
-    line:"High student intelligence, developmental readiness still forming.",
-    college:"Explorers are the group traditional higher education handles worst. The intellectual ability is genuine and visible, which is exactly why the developmental gap gets read as laziness rather than as timing. Left in a high-autonomy environment too early, an Explorer accumulates debt and switched majors rather than progress.",
-    helps:["Structure that is explicit rather than assumed — deadlines, check-ins, external scaffolding","Gap years, structured internships, national service, community college routes","Sustained mentorship from one person over time, rather than advising by appointment","Room to explore that doesn't carry four-year-degree pricing"],
-    stalls:["Large, anonymous, high-autonomy institutions entered straight from school","Any environment that assumes executive function rather than building it","Premature demands for a declared, permanent direction"],
-    task:"Consolidation. Turning intellectual range into a direction, and intention into follow-through — usually in that order."
-  },
-  practitioner:{
-    name:"Practitioners", where:"tl",
-    line:"Student intelligence in the broad middle, developmental readiness high.",
-    college:"Practitioners are routinely underestimated by instruments that only measure the horizontal axis. Reliability, follow-through, and judgment under real constraints are the scarcer commodity, and applied settings surface them immediately. The characteristic failure is being pushed into an abstract academic track, struggling with content that was never the point, and reading the mismatch as personal failure.",
-    helps:["Applied and technical programmes with a visible line from training to competence","Apprenticeships, clinical placements, licensure tracks, supervised practice","Clear expectations, immediate feedback, and work that produces something","Credentials that are respected rather than treated as a consolation route"],
-    stalls:["Abstraction-heavy general education with no applied anchor","Institutions that treat vocational pathways as second-best","Long stretches without feedback or visible product"],
-    task:"Recognition and depth. Finding a field where the existing maturity compounds into expertise, rather than being spent on requirements that don't lead anywhere."
-  },
-  atrisk:{
-    name:"At-Risk", where:"bl",
-    line:"Both axes currently low — a state, and the most malleable one.",
-    college:"This is the group the standard postsecondary system is least designed for, and the one most likely to leave with debt and no credential. That outcome is usually an environment problem rather than a person problem: standard advising, orientation, and coursework assume capacities that upstream conditions never had a chance to build.",
-    helps:["Wraparound support — advising, basic needs, and academics treated as one problem","Small cohorts with a named person who notices when someone disappears","Foundational skill-building before content load increases","Programmes explicitly designed to build learners before delivering curriculum"],
-    stalls:["Open-ended environments with high autonomy and low contact","Remediation delivered as more of the same instruction, only slower","Timelines set by financial-aid calendars rather than by development"],
-    task:"Stability first. Foundations, routine, and one relationship that holds — academics move once the ground stops shifting."
-  }
-};
-
-const MOBILITY = {
-  competitor:{up:"The upward move from here isn't to another quadrant — it's depth, and occasionally the sideways drift into genuinely unclassifiable work.",
-    down:"The downward move is real and common: sustained overload turns into burnout, and a Competitor who stops recovering starts to look, functionally, like an Explorer."},
-  explorer:{up:"Explorers move toward Competitor when executive function and persistence consolidate, and toward Practitioner when a concrete direction arrives before the abstraction does. Both are ordinary outcomes.",
-    down:"Without structure, the drift is lateral and expensive — switched majors, accumulated debt, and years spent proving an ability that was never in question."},
-  practitioner:{up:"Practitioners move toward Competitor through training, mentorship, and time — the maturity is already there, and what's added is range.",
-    down:"The downward drift comes from losing structure or purpose: without a clear line to competence, follow-through has nothing to attach to."},
-  atrisk:{up:"The most common upward move is to Practitioner, once stability holds and applied work provides traction. Explorer is the other route, when interest arrives before consistency does.",
-    down:"There isn't much further down inside the framework. The real risk is exit — dropout with debt and no credential."}
-};
-
-/* ===================== INSTITUTIONAL — CHAPTER 1 ===================== */
-/* Per Figure 3: Resources is the VERTICAL axis, Mission Integrity the HORIZONTAL. */
-
-const ARCHETYPES = {
-  platform:{name:"Platform University", logic:"Core brand plus outsourced or shared instruction",
-    strength:"Scale, reach, flexibility", risk:"Hollowing out the core"},
-  consortium:{name:"Networked Consortium", logic:"Shared curriculum and distributed capacity across institutions",
-    strength:"More with less, broader variety", risk:"Governance complexity"},
-  hybrid:{name:"Hybrid Specialist", logic:"Deep focus in selected domains, outsourcing elsewhere",
-    strength:"Strong identity and outcomes", risk:"Narrowness or dependence"},
-  developmental:{name:"Developmental College", logic:"Student growth, coaching, and mobility at the centre",
-    strength:"High human value, mission clarity", risk:"Resource intensity"}
-};
-
-/* Figure 2 — mismatch patterns, plus the student type each environment is built to serve */
-const ENVS = {
-  tournament:{name:"Tournament", needs:"rep", needsName:"reputational capital",
-    fail:"Weak signalling and poor placement", serves:"competitor"},
-  greenhouse:{name:"Greenhouse", needs:"human", needsName:"human capital",
-    fail:"Student drift and attrition", serves:"explorer"},
-  credential:{name:"Credentialing", needs:"design", needsName:"design capital",
-    fail:"Fragmented curriculum and low mastery", serves:"practitioner"},
-  repair:{name:"Repair Shop", needs:"cult", needsName:"cultural capital",
-    fail:"Neglect, stigma, and high attrition", serves:"atrisk"}
-};
-const ENV_ORDER = ["tournament","credential","greenhouse","repair"];
-
-/* Figure 6 — environments across quadrants. fit: strong | workable | weak | harmful */
-const ENV_BY_QUAD = {
-  leader:{ tournament:["strong","Flourishes — capital fully aligned"],
-           credential:["strong","Scales well on design and financial capital already in hand"],
-           greenhouse:["workable","Works in small, resource-heavy pockets — an honours cohort, a college within a college"],
-           repair:["weak","Rarely built. Remediation doesn't move rankings, so it doesn't get built even where the money plainly exists"] },
-  empire:{ tournament:["weak","Risks hollowness — selectivity as theatre, difficulty performed rather than demonstrated"],
-           credential:["weak","Inflated cost and poor return, discovered by students only after they've paid for it"],
-           greenhouse:["weak","Becomes a branding exercise — the language funded far more readily than the advising it describes"],
-           repair:["weak","High-risk and usually abandoned under pressure, the first cut when capital moves toward what markets better"] },
-  niche:{  tournament:["weak","Rare — resource limits prevent sustained competitive stakes at any meaningful scale"],
-           credential:["strong","Strongest fit on the table — efficient, honest, tightly coupled to an actual labour market"],
-           greenhouse:["workable","Real, but fragile. The cost shows up as faculty burnout rather than on the balance sheet"],
-           repair:["strong","Best fit — design and cultural capital carry it where financial capital can't"] },
-  fragile:{tournament:["harmful","Non-viable — a Tournament needs a name people trust enough to compete for"],
-           credential:["harmful","Predatory — a credential sold without the value it claims to certify"],
-           greenhouse:["harmful","Exploitative — promised in the viewbook, absent in the advising office"],
-           repair:["harmful","An exploitative last-chance trap, extracting tuition and time from students who can least afford to lose either"] }
-};
-
-const INST_Q = {
-  leader:{ num:"I", name:"Mission-Aligned Leaders", where:"tr",
-    line:"High resources, high mission integrity.",
-    read:"Real capital, and a strategy disciplined enough not to squander it. These institutions behave like stewards rather than operators, investing on decade-long horizons because they can genuinely afford to think in decades. The problem here is not survival. It's discipline — which sounds like the easier problem to have until you count how many wealthy institutions fail to solve it anyway.",
-    tempt:["Empire-building dressed up as strategic growth — a satellite campus, an institute with a name vague enough to mean almost anything","Treating prestige as already earned rather than continuously re-earned","Elite detachment from the institution's own constituents"],
-    wise:["Protecting mission boundaries deliberately, including declining opportunities the balance sheet could easily absorb","Investing in faculty and advising capacity ahead of need rather than after strain becomes visible","Treating AI as augmentation rather than substitution — this is the one quadrant that can afford patience about it"],
-    constraint:"Discipline. A Leader that fails does so by choosing too broadly, reaching for every archetype its resources technically permit.",
-    next:"Decide what not to do while the decision is still voluntary.",
-    ai:"Augmentation. The capital most at risk is cultural legitimacy, if AI-enabled advantages accrue to students who were already well served." },
-  empire:{ num:"II", name:"Prestige-Driven Empires", where:"tl",
-    line:"High resources, low mission integrity.",
-    read:"Wealthy, ambitious, and restless. Capital accumulates quickly and gets spent just as quickly, without the governance discipline to deploy it toward anything more coherent than growth for its own sake. Success gets defined the way it's easiest to measure and hardest to argue with — rankings, headcount, revenue — rather than the way that would require asking whether students are better off.",
-    tempt:["Debt-financed expansion outpacing any growth in actual academic value","Adjunct substitution used to protect margins rather than to diversify pedagogy","Reactive AI adoption deployed as marketing rather than as an attempt to improve anything"],
-    wise:["Naming what the institution is actually for, in language specific enough to rule things out","Reconciling the capital budget with the mission statement, and changing whichever one is lying","Rebuilding governance discipline before the next expansion rather than after it"],
-    constraint:"Discipline, absent. The resources are already there — the only thing standing between this quadrant and the one beside it is honesty about what the institution is for.",
-    next:"This is the quadrant most likely to produce a real recovery story, because it doesn't have to rebuild capital from nothing.",
-    ai:"Gimmickry. Reputational and design capital erode in tandem, since both were already the load-bearing weaknesses carried into the stress test." },
-  niche:{ num:"III", name:"Mission-True Niches", where:"br",
-    line:"Lower resources, high mission integrity.",
-    read:"Survives, and not infrequently thrives, because it knows exactly whom it serves and refuses to pretend otherwise. Integrity here is not a values statement — it's the only competitive advantage available to an institution that can't compete on resources. The risk is not corruption. It's fragility: one bad enrolment cycle, one demographic shift, or one board decision away from finding that out the hard way.",
-    tempt:["Over-expansion into markets that strain an already-thin faculty","Prestige-seeking additions — an honours college, a niche master's — that dilute the exact focus that made the institution viable","Underinvesting in advising because the budget won't stretch, even though advising is this quadrant's highest-leverage remaining investment"],
-    wise:["Designing pathways matched to actual student-viability profiles rather than the profiles the institution wishes it attracted","Partnerships that extend reach without capital investment it doesn't have","Innovating under constraint — stackable credentials, competency-based progression — rather than waiting for resources that may never arrive"],
-    constraint:"Capacity. A Niche that fails does so by reaching for the archetype its values recommend rather than the one its balance sheet supports.",
-    next:"Protect what works and build a financial floor under it before extending range.",
-    ai:"Extension — stretching scarce capacity further. Financial fragility persists regardless of what technology gets adopted." },
-  fragile:{ num:"IV", name:"Fragile Opportunists", where:"bl",
-    line:"Lower resources, lower mission integrity.",
-    read:"Permanent improvisation. Weak finances and eroded legitimacy leave a narrow set of available moves, most of them some version of desperation dressed up as strategy. What innovation occurs tends to be superficial — a new programme name, a new delivery format — because the deeper kind requires exactly the capital and coherence this quadrant doesn't have.",
-    tempt:["Marketing untethered from what the institution can actually deliver","Programmes built to capture enrolment rather than to produce outcomes","Academic corners cut wherever cutting them is least likely to be immediately visible"],
-    wise:["Triage before architecture — mission clarification and a capital audit come first","Honest subtraction: establish what can actually be staffed and funded, and say so publicly","Treating merger as a strategy rather than as a defeat"],
-    constraint:"Both. This quadrant is not facing an architecture-selection problem, and treating it as one is a category error with real costs.",
-    next:"Merge, reinvent with real discipline, or close. Choosing a floor plan before establishing that the building is sound is not a plan.",
-    ai:"Exploitation, marketed as salvation. It accelerates exposure rather than postponing it." }
-};
-
-/* Figure 4 — archetype-to-quadrant cross-walk */
-const CROSSWALK = {
-  leader:{ available:["hybrid","platform"],
-    availNote:"Hybrid Specialist, or Platform University pursued selectively.",
-    tempting:"platform",
-    temptNote:"Platform University pursued at scale rather than selectively — this quadrant's most likely route into Quadrant II.",
-    unavailable:[],
-    unavailNote:"None genuinely unavailable, which is the trouble. Nothing here is capacity-constrained, so the constraint has to come from discipline instead." },
-  empire:{ available:["platform"],
-    availNote:"Platform University — it requires resources and does not acutely require governance discipline.",
-    tempting:"platform",
-    temptNote:"The same Platform move, pursued without discipline, which is precisely the hollowing-out risk the archetype carries.",
-    unavailable:["developmental"],
-    unavailNote:"Developmental College requires sustained, governance-heavy attention to individual students — the discipline this quadrant has, by definition, already failed to demonstrate." },
-  niche:{ available:["consortium","hybrid"],
-    availNote:"Networked Consortium, or Hybrid Specialist.",
-    tempting:"developmental",
-    temptNote:"Developmental College — the correct archetype to want, and simultaneously the most resource-intensive one available. Getting the ethics right and the capital maths wrong at the same time.",
-    unavailable:["platform"],
-    unavailNote:"You cannot leverage brand capital you have never accumulated." },
-  fragile:{ available:[],
-    availNote:"None, credibly.",
-    tempting:null,
-    temptNote:"Whatever looks fastest to cash flow, relabelled after the fact.",
-    unavailable:["platform","consortium","hybrid","developmental"],
-    unavailNote:"None of the four is sustainable here. Borrowing against a strategic identity the institution cannot support makes a bad situation actively worse." }
-};
-
-/* ===================== RESOURCES: THE FIVE CAPITALS ===================== */
-/* Financial capital is measured; the other four are judged. Equal weight each,
-   per Ch.1's compression of the five-form framework into one blunt metric. */
-const FIN_FIELDS = [
-  {id:"endow", label:"Endowment per FTE ($ thousands)", lo:3, hi:150, ph:"e.g. 45"},
-  {id:"opm",   label:"Operating margin, latest year (%)", lo:-12, hi:8, ph:"e.g. -1.2"},
-  {id:"tuidep",label:"Share of operating revenue from tuition (%)", lo:85, hi:30, ph:"e.g. 74"},
-  {id:"enr5",  label:"Total enrolment change, 5-year (%)", lo:-25, hi:8, ph:"e.g. -11"},
-  {id:"defy",  label:"Deficit years in the last three", lo:3, hi:0, ph:"0 to 3"}
-];
-
-const CAPITALS = [
-  {id:"human",  label:"Human capital",       hint:"faculty and staff with the expertise the intended environment actually needs"},
-  {id:"rep",    label:"Reputational capital", hint:"credibility to make the credential mean something to students and employers"},
-  {id:"design", label:"Design capital",       hint:"institutional know-how to build and run an environment well"},
-  {id:"cult",   label:"Cultural capital",     hint:"internal culture that supports rather than undermines the stated purpose"}
-];
-
-/* ===================== MISSION INTEGRITY ITEMS ===================== */
-const MI_ITEMS = [
-  {t:"Our stated mission names a specific kind of student, not simply all students."},
-  {t:"We deliver what we promise to the students we already enrol."},
-  {t:"Our strongest programmes are genuinely strong, and we have outcomes data we would publish."},
-  {t:"Our recruiting material would survive being read next to that outcomes data."},
-  {t:"Senior leaders can state plainly which students we are not the right place for."},
-  {t:"We have declined an opportunity the balance sheet could have absorbed, because it didn't fit who we are."},
-  {t:"New initiatives are staffed and funded at the level they'd need to work, or we don't start them."},
-  {r:1, t:"Success here gets defined by rankings, headcount, or revenue more than by whether students are better off."},
-  {r:1, t:"We have added programmes in areas where we have no existing faculty strength."},
-  {r:1, t:"Advising or instructional capacity has been reduced to fund something more visible."}
-];
-
-/* ===================== BAKED SNAPSHOT ===================== */
-/* Source: thomasmennella/higheredanalysis data.json — Form 990 filings, 2022-23 */
-const BAKED = {
-"168254":{n:"Western New England University",opm:-1.2,defy:1},
-"164447":{n:"American International College",opm:0.4,defy:0},
-"167899":{n:"Springfield College",opm:-6.6,defy:2},
-"164632":{n:"Bay Path University",opm:-0.4,defy:1},
-"164562":{n:"Assumption University",opm:-4.4,defy:1},
-"166850":{n:"Merrimack College",opm:4.4,defy:0},
-"167260":{n:"Nichols College",opm:-5.1,defy:1},
-"129941":{n:"University of New Haven",opm:4.8,defy:0},
-"217518":{n:"Roger Williams University",opm:0.8,defy:0},
-"168227":{n:"Wentworth Institute of Technology",opm:-2.1,defy:2},
-"130226":{n:"Quinnipiac University",opm:7.6,defy:0},
-"130253":{n:"Sacred Heart University",opm:16.6,defy:0},
-"167996":{n:"Stonehill College",opm:-0.9,defy:1},
-"168005":{n:"Suffolk University",opm:-9.3,defy:2},
-"217536":{n:"Salve Regina University",opm:0.9,defy:0},
-"165699":{n:"Endicott College",opm:11.6,defy:0},
-"165529":{n:"Curry College",opm:-15.5,defy:3},
-"166391":{n:"Lasell University",opm:-17.7,defy:3},
-"165671":{n:"Emmanuel College",opm:-7.9,defy:1},
-"167394":{n:"Elms College",opm:null,defy:0},
-"138947":{n:"Clark University",opm:-9.7,defy:3},
-"168421":{n:"Worcester Polytechnic Institute",opm:-4.4,defy:3},
-"217165":{n:"Bryant University",opm:5.2,defy:0}
-};
-
-/* ===================== WORKED CASE: ASHCOMBE (Ch.1 §4) ===================== */
-const ASHCOMBE = {
-  name:"Ashcombe State University",
-  fin:{endow:4, opm:-1.5, tuidep:74, enr5:-8, defy:2},
-  cap:{human:3, rep:2, design:2, cult:3},
-  mi:[4,5,5,5,4,3,2,3,5,5],
-  archetype:"hybrid",
-  env:"tournament",
-  text:"Mission: to provide accessible, practice-oriented education preparing students of our region for professional careers and community leadership.\n\nRecent decisions:\n1. Launched a small Honors College three years ago, funded in part by eliminating two academic-advising positions.\n2. Submitted a doctoral proposal in educational leadership, into a market we have not yet demonstrated we understand.\n3. Allied-health enrolment has grown 22% over five years with no proportional increase in faculty lines or lab capacity.\n\nWe are a regional public of roughly 6,200 students, 74% tuition-dependent, founded as a teachers' college. Our strongest programmes remain nursing, allied health, and education. The cabinet describes the above as balancing growth with innovation."
-};
-
-const DOT_COLORS = ["#F5C451","#FF8A5B","#5FD3B2","#B79CFF","#FF9FC4","#6FC7FF","#E4E36A","#FF6B6B"];
-</script>
-<script>
-"use strict";
-
-/* ===================== STATE ===================== */
-const S = {
-  mode:null, intelSrc:null,
-  answers:{}, selfAns:{}, randoAns:{},
-  readyPage:0, student:null,
-  insts:[], src:{},
-  arch:null, env:null
-};
-const CAP = {}, MI = {};
-const KEY   = () => ($("#k-anthropic").value || "").trim();
-const MODEL = () => ($("#k-model").value || "claude-sonnet-4-6").trim();
-const SCKEY = () => ($("#k-scorecard").value || "").trim() || "DEMO_KEY";
-
-/* ===================== NAVIGATION ===================== */
-function go(view){
-  $$("[data-view]").forEach(v => v.hidden = (v.id !== "v-"+view));
-  $$(".tab").forEach(t => t.setAttribute("aria-current", String(t.dataset.go === view)));
-  try{ window.scrollTo({top:0}); }catch(e){}
-}
-document.addEventListener("click", e => {
-  const g = e.target.closest("[data-go]");
-  if(g) go(g.dataset.go);
-});
-function showStep(name){
-  $$("#v-student [data-step]").forEach(s => s.hidden = (s.dataset.step !== name));
-  const order = ["consent","mode","intel","ready","result"], i = order.indexOf(name);
-  $$("#student-steps li").forEach((li,k) => {
-    li.dataset.on = k===i ? "1":"0"; li.dataset.done = k<i ? "1":"0";
-  });
-  try{ window.scrollTo({top:0, behavior:"smooth"}); }catch(e){}
-}
-$$("[data-back]").forEach(b => b.addEventListener("click", () => showStep(b.dataset.back)));
-
-/* ===================== MATRIX RENDERER =====================
-   Drawn to match the book's figures: four rounded tiles, double-headed grey axes,
-   labels at the arrow ends. Plotted points overlay the whole plate. */
-let GRAD_N = 0;
-
-const GEO_FULL = {w:620,h:500, cx:310, cy:232, tw:150, th:132, gap:26,
-  vTop:36, vBot:428, hLeft:118, hRight:502, ptL:126, ptR:494, ptT:62, ptB:402,
-  fsName:15, fsNum:13, lh:19, fsAxis:12, dot:5.5, labFs:13};
-const GEO_MINI = {w:300,h:215, cx:150, cy:100, tw:118, th:72, gap:12,
-  vTop:8, vBot:194, hLeft:8, hRight:292, ptL:26, ptR:274, ptT:26, ptB:176,
-  fsName:9.5, fsNum:8, lh:11, fsAxis:0, dot:3.5, labFs:0};
-
-function arrowLine(x1,y1,x2,y2,horizontal){
-  const c = "#C3C7C1", t = 7, head = 11;
-  let s = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${t}" stroke-linecap="butt"/>`;
-  if(horizontal){
-    s += `<polygon points="${x1},${y1-head} ${x1-head*1.1},${y1} ${x1},${y1+head}" fill="${c}"/>`;
-    s += `<polygon points="${x2},${y2-head} ${x2+head*1.1},${y2} ${x2},${y2+head}" fill="${c}"/>`;
-  } else {
-    s += `<polygon points="${x1-head},${y1} ${x1},${y1-head*1.1} ${x1+head},${y1}" fill="${c}"/>`;
-    s += `<polygon points="${x2-head},${y2} ${x2},${y2+head*1.1} ${x2+head},${y2}" fill="${c}"/>`;
-  }
-  return s;
-}
-
-function renderMatrix(el, cfg, points, compact){
-  const G = compact ? GEO_MINI : GEO_FULL;
-  const gid = "tileGrad"+(++GRAD_N);
-  const tiles = {
-    tl:[G.cx-G.gap-G.tw, G.cy-G.gap-G.th],
-    tr:[G.cx+G.gap,      G.cy-G.gap-G.th],
-    bl:[G.cx-G.gap-G.tw, G.cy+G.gap],
-    br:[G.cx+G.gap,      G.cy+G.gap]
-  };
-  let s = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#31709B"/><stop offset="1" stop-color="#164468"/></linearGradient></defs>`;
-
-  s += arrowLine(G.cx, G.vTop, G.cx, G.vBot, false);
-  s += arrowLine(G.hLeft, G.cy, G.hRight, G.cy, true);
-
-  for(const k of ["tl","tr","bl","br"]){
-    const q = cfg.quads[k]; if(!q) continue;
-    const [x,y] = tiles[k];
-    const hi = cfg.highlight === k;
-    s += `<rect x="${x}" y="${y}" width="${G.tw}" height="${G.th}" rx="${compact?7:13}"
-      fill="url(#${gid})"${hi?' stroke="#F5C451" stroke-width="3.5"':''}/>`;
-    const lines = q.lines;
-    const nLines = lines.length + (q.num ? 1 : 0);
-    let ty = y + G.th/2 - (nLines-1)*G.lh/2 + G.lh*0.32;
-    if(q.num){
-      s += `<text x="${x+G.tw/2}" y="${ty}" text-anchor="middle" fill="#FFFFFF" fill-opacity=".85"
-        font-family="Inter Tight, sans-serif" font-size="${G.fsNum}" font-weight="600">${esc(q.num)}</text>`;
-      ty += G.lh;
-    }
-    lines.forEach(ln => {
-      s += `<text x="${x+G.tw/2}" y="${ty}" text-anchor="middle" fill="#FFFFFF"
-        font-family="Inter Tight, sans-serif" font-size="${G.fsName}" font-weight="500">${esc(ln)}</text>`;
-      ty += G.lh;
-    });
-  }
-
-  if(!compact){
-    const A = `font-family="Inter Tight, sans-serif" font-size="${G.fsAxis}" font-weight="700" fill="#161C1A"`;
-    const put = (lines, x, y, anchor) => {
-      let out = "";
-      lines.forEach((ln,i) => { out += `<text x="${x}" y="${y + i*15}" text-anchor="${anchor}" ${A}>${esc(ln)}</text>`; });
-      return out;
-    };
-    s += put(cfg.top,    G.cx, 14, "middle");
-    s += put(cfg.bottom, G.cx, G.vBot + 26, "middle");
-    s += put(cfg.left,   G.hLeft - 12, G.cy - (cfg.left.length-1)*7.5, "end");
-    s += put(cfg.right,  G.hRight + 12, G.cy - (cfg.right.length-1)*7.5, "start");
-  }
-
-  const px = x => G.ptL + clamp(x,0,1)*(G.ptR-G.ptL);
-  const py = y => G.ptB - clamp(y,0,1)*(G.ptB-G.ptT);
-  (points||[]).forEach((p,i) => {
-    const cx = px(p.x), cy = py(p.y);
-    const rx = Math.max(7,(p.rx||.08)*(G.ptR-G.ptL)), ry = Math.max(7,(p.ry||.08)*(G.ptB-G.ptT));
-    const c = p.color || "#F5C451";
-    s += `<g class="ell ell-in" style="animation-delay:${i*70}ms">`;
-    s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${c}" fill-opacity=".26"
-      stroke="${c}" stroke-width="1.6" stroke-opacity=".95"/>`;
-    const r = p.n && !compact ? 11 : G.dot;
-    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" stroke="#12202C" stroke-width="1.6"/>`;
-    if(p.n && !compact){
-      s += `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-family="Inter Tight, sans-serif"
-        font-size="12" font-weight="700" fill="#12202C">${esc(p.n)}</text>`;
-    }
-    s += `</g>`;
-  });
-  el.innerHTML = s;
-}
-
-const STUDENT_CFG = {
-  top:["High Developmental Readiness"], bottom:["Lower Developmental Readiness"],
-  left:["Lower Student","Intelligence"], right:["High Student","Intelligence"],
-  quads:{ tl:{lines:["Practitioners"]}, tr:{lines:["Competitors"]},
-          bl:{lines:["At-Risk"]},       br:{lines:["Explorers"]} }
-};
-const INST_CFG = {
-  top:["High Resources"], bottom:["Low Resources"],
-  left:["Low Mission","Integrity"], right:["High Mission","Integrity"],
-  quads:{ tl:{num:"II.", lines:["Prestige-","Driven","Empires"]},
-          tr:{num:"I.",  lines:["Mission-","Aligned","Leaders"]},
-          bl:{num:"IV.", lines:["Fragile","Opportunists"]},
-          br:{num:"III.",lines:["Mission-True","Niches"]} }
-};
-
-/* ===================== SHARED CONTROLS ===================== */
-function likertRow(idx, text, n, store){
-  const cur = store[idx];
-  let pips = "";
-  LIKERT.forEach((lab,k) => {
-    pips += `<button type="button" class="pip" data-set="${idx}" data-val="${k+1}"
-      aria-pressed="${cur===k+1}" title="${lab}">${k+1}</button>`;
-  });
-  pips += `<button type="button" class="pip skip" data-set="${idx}" data-val="skip"
-    aria-pressed="${cur==="skip"}">Skip</button>`;
-  return `<div class="item">
-    <div class="q"><span class="n">${n}</span><span class="txt">${esc(text)}</span></div>
-    <div class="scale-ends"><span>Strongly disagree</span><span>Strongly agree</span></div>
-    <div class="scale">${pips}</div></div>`;
-}
-
-document.addEventListener("click", e => {
-  const p = e.target.closest(".pip[data-set]");
-  if(p){
-    const id = p.dataset.set, val = p.dataset.val === "skip" ? "skip" : +p.dataset.val;
-    const store = id[0]==="r" ? S.randoAns : id[0]==="s" ? S.selfAns : S.answers;
-    if(store[id] === val) delete store[id]; else store[id] = val;
-    p.closest(".scale").querySelectorAll(".pip").forEach(x =>
-      x.setAttribute("aria-pressed", String(store[id] === (x.dataset.val==="skip"?"skip":+x.dataset.val))));
-    if(id[0]==="i") updateProgress();
-  }
-  const c = e.target.closest(".pip[data-cap]");
-  if(c){
-    const id = c.dataset.cap, v = +c.dataset.val;
-    if(CAP[id]===v) delete CAP[id]; else CAP[id]=v;
-    c.closest(".scale").querySelectorAll(".pip").forEach(x => x.setAttribute("aria-pressed", String(CAP[id]===+x.dataset.val)));
-  }
-  const m = e.target.closest(".pip[data-mi]");
-  if(m){
-    const id = m.dataset.mi, v = m.dataset.val==="skip" ? "skip" : +m.dataset.val;
-    if(MI[id]===v) delete MI[id]; else MI[id]=v;
-    m.closest(".scale").querySelectorAll(".pip").forEach(x =>
-      x.setAttribute("aria-pressed", String(MI[id] === (x.dataset.val==="skip"?"skip":+x.dataset.val))));
-  }
-  const a = e.target.closest("[data-arch]");
-  if(a){ S.arch = S.arch===a.dataset.arch ? null : a.dataset.arch;
-    $$("[data-arch]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.arch===S.arch))); }
-  const v = e.target.closest("[data-env]");
-  if(v){ S.env = S.env===v.dataset.env ? null : v.dataset.env;
-    $$("[data-env]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.env===S.env))); }
-});
-
-document.addEventListener("input", e => {
-  const f = e.target.closest("[data-fin]");
-  if(f){ S.src[f.dataset.fin] = "entered"; paintTags(); }
-});
-
-/* ===================== STUDENT: ITEMS ===================== */
-function activeItems(){ return ITEMS.map((it,i)=>({...it,i})).filter(it => S.mode==="full" || it.core===1); }
-const PAGE = 8;
-
-function updateProgress(){
-  const items = activeItems(), answered = Object.keys(S.answers).length;
-  $("#ready-prog").style.width = Math.round(answered/items.length*100)+"%";
-  $("#ready-count").textContent = `${answered} of ${items.length} answered`;
-}
-
-function renderReady(){
-  const items = activeItems(), start = S.readyPage*PAGE, page = items.slice(start, start+PAGE);
-  let html = "";
-  page.forEach((it,k) => html += likertRow("i"+it.i, it.t, String(start+k+1).padStart(2,"0"), S.answers));
-  if(start + PAGE >= items.length){
-    html += `<h3 style="margin-top:26px">A few last ones</h3>
-      <p class="small muted" style="margin-top:-2px">These aren't scored into the placement. They flag a
-      pattern the framework treats separately.</p>`;
-    RANDO_ITEMS.forEach((it,k) => html += likertRow("r"+k, it.t, "R"+(k+1), S.randoAns));
-  }
-  $("#ready-items").innerHTML = html;
-  updateProgress();
-  $("#ready-next").textContent = (start+PAGE >= items.length) ? "See placement" : "Next";
-  try{ window.scrollTo({top:0, behavior:"smooth"}); }catch(e){}
-}
-
-/* ===================== STUDENT: SCORING ===================== */
-const ACT2SAT = {36:1590,35:1560,34:1530,33:1500,32:1470,31:1430,30:1400,29:1360,28:1320,27:1290,26:1250,
-  25:1210,24:1180,23:1140,22:1110,21:1070,20:1030,19:990,18:950,17:910,16:870,15:830,14:790,13:760,12:720,11:680,10:640};
-const satToX = t => clamp((t-880)/600, .03, .97);
-/* Bands derive from x so they can never contradict the quadrant split. x=.50 is SAT ~1180,
-   roughly the top quartile of test takers — where Ch.6's own 16-24% high band lands. */
-const bandOfX = x => x >= .5 ? "higher" : x >= .25 ? "broad middle" : "lower";
-
-function scoreIntel(){
-  const out = {x:.5, rx:.26, band:"not estimated", basis:"no academic proxy supplied", conf:"very low"};
-  if(S.intelSrc === "sat"){
-    let t = +$("#sat-total").value;
-    if(!t){ const a=+$("#sat-ebrw").value, b=+$("#sat-math").value; if(a&&b) t=a+b; }
-    if(t>=400 && t<=1600){ out.x=satToX(t); out.rx=.07; out.conf="moderate"; out.band=bandOfX(out.x);
-      out.basis=`SAT ${t}`; return out; }
-  }
-  if(S.intelSrc === "act"){
-    const a = Math.round(+$("#act-comp").value);
-    if(ACT2SAT[a]){ const t=ACT2SAT[a]; out.x=satToX(t); out.rx=.085; out.conf="moderate";
-      out.band=bandOfX(out.x); out.basis=`ACT ${a} (\u2248 SAT ${t})`; return out; }
-  }
-  if(S.intelSrc === "none"){
-    const taken=$("#ap-taken").value, passed=$("#ap-passed").value;
-    const answered = Object.keys(S.selfAns).filter(k => S.selfAns[k]!=="skip");
-    let selfMean = null;
-    if(answered.length){
-      let sum=0; answered.forEach(k => { const it=SELF_ITEMS[+k.slice(1)], v=S.selfAns[k]; sum += it.r ? 6-v : v; });
-      selfMean = sum/answered.length;
-    }
-    const parts=[], w=[];
-    if(taken!=="" || passed!==""){ parts.push(clamp(((+taken||0)+(+passed||0)*1.5)/7.5,0,1)); w.push(.45); }
-    if(selfMean!=null){ parts.push(clamp((selfMean-1.6)/2.8,0,1)); w.push(.55); }
-    if(parts.length){
-      const tw = w.reduce((a,b)=>a+b,0);
-      out.x = clamp(parts.reduce((a,p,k)=>a+p*w[k],0)/tw, .05, .95);
-      out.rx = parts.length>1 ? .13 : .18;
-      out.conf = "low"; out.band = bandOfX(out.x);
-      out.basis = "coursework and self-description, no test score";
-      return out;
-    }
-  }
-  return out;
-}
-
-function scoreReady(){
-  const items = activeItems(), byDom = {};
-  DOMAINS.forEach(d => byDom[d.id]=[]);
-  let answered = 0;
-  items.forEach(it => {
-    const v = S.answers["i"+it.i];
-    if(v==="skip" || v==null) return;
-    answered++; byDom[it.d].push(it.r ? 6-v : v);
-  });
-  const doms = DOMAINS.map(d => {
-    const a = byDom[d.id], m = a.length ? a.reduce((x,y)=>x+y,0)/a.length : null;
-    return {...d, mean:m, lv: m==null?"na": m>=3.9?"high": m>=3.0?"mid":"low"};
-  });
-  const got = doms.filter(d => d.mean!=null);
-  const overall = got.length ? got.reduce((a,d)=>a+d.mean,0)/got.length : null;
-  const skipped = items.length - answered;
-  const y = overall==null ? .5 : clamp((overall-2.0)/2.6, .03, .97);
-  let ry = (S.mode==="full" ? .06 : .095) + Math.min(.10, skipped*.012);
-  if(overall==null) ry = .26;
-  return {y, ry, doms, overall, answered, skipped, total:items.length,
-    band: overall==null ? "not estimated" : overall>=3.9?"higher": overall>=3.3?"moderate":"lower"};
-}
-
-const quadOf = (x,y) => y>=.5 ? (x>=.5?"competitor":"practitioner") : (x>=.5?"explorer":"atrisk");
-
-function randoFlag(intel, ready){
-  const vals = RANDO_ITEMS.map((_,k)=>S.randoAns["r"+k]).filter(v => v!=null && v!=="skip");
-  if(vals.length<3) return false;
-  const m = vals.reduce((a,b)=>a+b,0)/vals.length;
-  const per = ready.doms.find(d=>d.id==="per"), nav = ready.doms.find(d=>d.id==="nav");
-  return m>=4.34 && intel.x>=.58 && ((per&&per.lv==="low")||(nav&&nav.lv==="low"));
-}
-
-function candidatesFor(xKnown, yKnown, x, y){
-  if(!xKnown && !yKnown) return ["competitor","practitioner","explorer","atrisk"];
-  if(!xKnown) return y>=.5 ? ["competitor","practitioner"] : ["explorer","atrisk"];
-  return x>=.5 ? ["competitor","explorer"] : ["practitioner","atrisk"];
-}
-
-async function computeStudent(){
-  const intel = scoreIntel(), ready = scoreReady();
-  const xKnown = intel.band!=="not estimated", yKnown = ready.band!=="not estimated";
-  const q = (xKnown && yKnown) ? quadOf(intel.x, ready.y) : null;
-  const boundary = [];
-  if(Math.abs(intel.x-.5)<.08) boundary.push("the vertical boundary");
-  if(Math.abs(ready.y-.5)<.08) boundary.push("the horizontal boundary");
-  const res = {intel, ready, q, xKnown, yKnown, boundary,
-    rando: q ? randoFlag(intel, ready) : false,
-    candidates: q ? null : candidatesFor(xKnown, yKnown, intel.x, ready.y)};
-  S.student = res;
-
-  renderMatrix($("#mx-student"), {...STUDENT_CFG, highlight: q ? STUDENT_Q[q].where : null},
-    [{x:intel.x, y:ready.y, rx:intel.rx, ry:ready.ry}]);
-  $("#student-plate-note").textContent =
-    "The ellipse spans the range this evidence actually supports. A wider ellipse means a less certain placement, not a worse one.";
-  $("#student-result").innerHTML = studentHTML(res, null);
-  showStep("result");
-  if(!q) return;
-  const narr = await claudeStudentNarrative(res);
-  if(narr) $("#student-result").innerHTML = studentHTML(res, narr);
-}
-
-function readinessProfileHTML(R){
-  let h = `<h3>Readiness profile</h3><div>`;
-  R.doms.forEach(d => {
-    const pct = d.mean==null ? 0 : Math.round((d.mean-1)/4*100);
-    const tag = d.mean==null ? "not answered" : d.lv==="high"?"established": d.lv==="mid"?"uneven":"still forming";
-    h += `<div class="dom" data-lv="${d.lv}"><span class="name">${esc(d.name)}
-      <span class="muted small">\u2014 ${esc(d.blurb)}</span></span>
-      <span class="bar"><i style="width:${pct}%"></i></span><span class="tag">${tag}</span></div>`;
-  });
-  return h + `</div>`;
-}
-
-function listify(a){
-  if(a.length===1) return a[0];
-  if(a.length===2) return a[0]+" and "+a[1];
-  return a.slice(0,-1).join(", ")+", and "+a[a.length-1];
-}
-
-function indeterminateHTML(r){
-  const I=r.intel, R=r.ready, cands=r.candidates.map(k=>STUDENT_Q[k].name);
-  const missing = (!r.xKnown && !r.yKnown) ? "neither axis" : !r.xKnown ? "the horizontal axis" : "the vertical axis";
-  let h = `<div class="verdict"><div class="k">Placement withheld</div><h2>Not enough to place</h2>
-    <div class="small muted">There is no evidence for ${missing}, so naming a quadrant would be invention.</div>
-    <div class="conf">On what was supplied, the candidates are ${esc(listify(cands))}.</div></div>
-    <div class="bands">
-    <div class="band"><div class="k">Student intelligence</div><div class="v">${esc(I.band)}</div>
-      <div class="n">${esc(I.basis)}</div></div>
-    <div class="band"><div class="k">Developmental readiness</div><div class="v">${esc(R.band)}</div>
-      <div class="n">${R.answered} of ${R.total} items answered</div></div></div>
-    <p>The ellipse on the matrix shows what this evidence actually covers \u2014 most of the plane, in this case.
-      That is a finding rather than a failure: it says the instrument was not given enough to distinguish
-      between developmental states that call for quite different environments.</p>`;
-  if(R.answered) h += readinessProfileHTML(R);
-  h += `<p class="muted">${!r.xKnown?"Supplying a test score, or the coursework alternative, would fix the horizontal position. ":""}${!r.yKnown?"Answering the readiness items would fix the vertical position. ":""}Either one narrows this to two candidates; both narrow it to one.</p>`;
-  return h;
-}
-
-function studentHTML(r, narr){
-  if(!r.q) return indeterminateHTML(r);
-  const Q=STUDENT_Q[r.q], I=r.intel, R=r.ready;
-  const strong = R.doms.filter(d=>d.lv==="high").map(d=>d.name.toLowerCase());
-  const weak   = R.doms.filter(d=>d.lv==="low").map(d=>d.name.toLowerCase());
-  const conf = (R.skipped > R.total*.3 || I.conf==="very low") ? "low"
-             : (I.conf==="moderate" && S.mode==="full") ? "moderate" : "modest";
-  let h = `<div class="verdict"><div class="k">Current developmental state</div>
-    <h2>${esc(Q.name)}</h2><div class="small muted">${esc(Q.line)}</div>
-    <div class="conf">Confidence in this placement: <strong>${conf}</strong>.
-      ${r.boundary.length ? "The estimate sits close to "+r.boundary.join(" and ")+", so the neighbouring quadrant is a live possibility."
-        : "The estimate sits clear of the quadrant boundaries."}
-      ${R.skipped ? R.skipped+" question"+(R.skipped===1?" was":"s were")+" skipped." : ""}</div></div>
-    <div class="bands">
-    <div class="band"><div class="k">Student intelligence</div><div class="v">${esc(I.band)}</div>
-      <div class="n">${esc(I.basis)}</div></div>
-    <div class="band"><div class="k">Developmental readiness</div><div class="v">${esc(R.band)}</div>
-      <div class="n">${R.answered} of ${R.total} items \u00b7 ${S.mode==="full"?"full":"short"} form</div></div></div>`;
-
-  if(narr) h += `<h3>Reading</h3><div class="narr">${esc(narr)}</div>`;
-  else {
-    h += `<h3>Reading</h3><p>${esc(Q.college)}</p>`;
-    if(strong.length) h += `<p>On the readiness side the load is currently carried by ${esc(listify(strong))}.</p>`;
-    if(weak.length)   h += `<p>The parts still forming are ${esc(listify(weak))} \u2014 which is where the next
-      development actually happens, and where an environment either helps or doesn't.</p>`;
-  }
-  h += readinessProfileHTML(R);
-  h += `<h3>Environments that tend to help</h3><ul>${Q.helps.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  h += `<h3>Environments where this profile tends to stall</h3><ul>${Q.stalls.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  h += `<div class="callout"><strong>Primary developmental task.</strong> ${esc(Q.task)}</div>`;
-  h += `<h3>Movement</h3><p>${esc(MOBILITY[r.q].up)}</p><p>${esc(MOBILITY[r.q].down)}</p>`;
-  if(r.rando){
-    h += `<div class="callout" style="border-color:var(--ink)"><strong>A note, held loosely.</strong>
-      The last three answers show a pattern the framework calls a RANDO signal \u2014 self-initiated work, low
-      tolerance for routine, and a preference for taking consequences over following a process. That is a
-      signal, not a category, and it is far more often ordinary independent-mindedness than anything rarer.
-      Read it as: conventional structure is likely to fit badly, and access to tools, autonomy, and a real
-      mentor is likely to matter more than curriculum.</div>`;
-  }
-  h += `<details class="note"><summary>How this placement was calculated</summary><div class="body">
-    The horizontal position comes from ${esc(I.basis)}, treated as a rough proxy for cognitive readiness and
-    nothing more; the band boundary sits near SAT 1180, roughly the top quartile of test takers. The vertical
-    position is the mean of eight readiness dimensions, each measured by ${S.mode==="full"?"four":"two"}
-    self-report items, several of them reverse-scored so that answering the same way down the whole form does
-    not produce a high result. The ellipse is drawn from evidence quality: test-based horizontal estimates are
-    narrower than self-described ones, the full form is narrower than the short one, and every skipped item
-    widens it. No numerical score is reported because the instrument does not support that precision \u2014 the
-    bands are the finding.</div></details>`;
-  return h;
-}
-
-/* ===================== CLAUDE ===================== */
-async function callClaude(system, user, maxTokens){
-  const headers = {"Content-Type":"application/json"};
-  const k = KEY();
-  if(k){ headers["x-api-key"]=k; headers["anthropic-version"]="2023-06-01";
-    headers["anthropic-dangerous-direct-browser-access"]="true"; }
-  const ctrl = new AbortController(), timer = setTimeout(()=>ctrl.abort(), 30000);
-  try{
-    const r = await fetch("https://api.anthropic.com/v1/messages", {method:"POST", headers, signal:ctrl.signal,
-      body: JSON.stringify({model:MODEL(), max_tokens:maxTokens||1000, system, messages:[{role:"user",content:user}]})});
-    if(!r.ok) throw new Error("API "+r.status);
-    const d = await r.json();
-    return (d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
-  } catch(e){ return null; } finally { clearTimeout(timer); }
-}
-
-const VOICE = `You write for a higher-education book called Fits and Dreams. Rules you never break:
-- Never diagnose. No clinical or disorder language, ever.
-- No deficit language, no motivational filler, no reassurance, no flattery, no exclamation marks.
-- Describe a current state, never a fixed trait or a measure of worth.
-- Analytically precise, calm, direct, humane. Plain sentences.
-- Never recommend that anyone be excluded from education.
-- Acknowledge the limits of self-report data where it matters.`;
-
-async function claudeStudentNarrative(r){
-  const R = r.ready;
-  const profile = R.doms.map(d => `${d.name}: ${d.lv==="na"?"not answered":d.lv==="high"?"established":d.lv==="mid"?"uneven":"still forming"}`).join("; ");
-  return await callClaude(VOICE, `Write the "Reading" section for a student developmental placement. 150-200 words, 2-3 paragraphs, plain prose, no headings and no lists.
-
-Placement: ${STUDENT_Q[r.q].name} (${STUDENT_Q[r.q].line})
-Academic proxy band: ${r.intel.band} (basis: ${r.intel.basis})
-Developmental readiness band: ${R.band}
-Dimension profile: ${profile}
-Form length: ${S.mode} (${R.answered} of ${R.total} answered, ${R.skipped} skipped)
-Near a quadrant boundary: ${r.boundary.length ? r.boundary.join(" and ") : "no"}
-
-Say what this configuration typically means in higher education, which dimensions are carrying the person and which are still forming, and what that combination tends to produce in practice. Address the reader as "you". Do not list environments or recommendations — a later section does that. Do not restate the band names as a summary.`, 700);
-}
-
-/* ===================== INSTITUTION: FORMS ===================== */
-function buildInstForms(){
-  $("#fin-fields").innerHTML = FIN_FIELDS.map(f =>
-    `<label class="fld"><span class="lab">${esc(f.label)} <span id="tag-${f.id}"></span></span>
-     <input type="number" step="any" id="rf-${f.id}" data-fin="${f.id}" placeholder="${esc(f.ph)}"></label>`).join("");
-
-  $("#cap-sliders").innerHTML = CAPITALS.map(sl =>
-    `<div class="item"><div class="q"><span class="txt">${esc(sl.label)}
-      <span class="muted small">\u2014 ${esc(sl.hint)}</span></span></div>
-     <div class="scale">${[1,2,3,4,5].map(v =>
-       `<button type="button" class="pip" data-cap="${sl.id}" data-val="${v}" aria-pressed="false">${v}</button>`).join("")}
-     </div></div>`).join("");
-
-  $("#mi-items").innerHTML = MI_ITEMS.map((it,k) =>
-    `<div class="item"><div class="q"><span class="n">${String(k+1).padStart(2,"0")}</span>
-      <span class="txt">${esc(it.t)}</span></div>
-     <div class="scale-ends"><span>Strongly disagree</span><span>Strongly agree</span></div>
-     <div class="scale">${LIKERT.map((lab,v) =>
-       `<button type="button" class="pip" data-mi="${k}" data-val="${v+1}" aria-pressed="false" title="${lab}">${v+1}</button>`).join("")}
-      <button type="button" class="pip skip" data-mi="${k}" data-val="skip" aria-pressed="false">Skip</button>
-     </div></div>`).join("");
-
-  $("#arch-pills").innerHTML = Object.entries(ARCHETYPES).map(([id,a]) =>
-    `<button type="button" class="pill" data-arch="${id}" aria-pressed="false">${esc(a.name)}
-      <span class="sub">${esc(a.logic)}</span></button>`).join("");
-
-  $("#env-pills").innerHTML = ENV_ORDER.map(id =>
-    `<button type="button" class="pill" data-env="${id}" aria-pressed="false">${esc(ENVS[id].name)}
-      <span class="sub">needs ${esc(ENVS[id].needsName)}</span></button>`).join("");
-
-  $("#inst-known").innerHTML = Object.values(BAKED).map(b=>`<option value="${esc(b.n)}">`).join("");
-}
-
-function paintTags(){
-  FIN_FIELDS.forEach(f => {
-    const el = $("#tag-"+f.id); if(!el) return;
-    const s = S.src[f.id];
-    el.innerHTML = s ? `<span class="tag-inline" data-src="${s}">${s==="baked"?"stored":s}</span>` : "";
-  });
-}
-const norm = (v,lo,hi) => (v==null||isNaN(v)) ? null : clamp((v-lo)/(hi-lo),0,1);
-
-/* ===================== INSTITUTION: SCORING ===================== */
-function scoreResources(){
-  const finParts = [];
-  FIN_FIELDS.forEach(f => {
-    const raw = $("#rf-"+f.id).value;
-    if(raw==="") return;
-    const n = norm(parseFloat(raw), f.lo, f.hi);
-    if(n!=null) finParts.push(n);
-  });
-  const fin = finParts.length ? finParts.reduce((a,b)=>a+b,0)/finParts.length : null;
-  const caps = CAPITALS.map(c => ({id:c.id, name:c.label, v: CAP[c.id]!=null ? (CAP[c.id]-1)/4 : null, raw:CAP[c.id]}));
-  const all = [];
-  if(fin!=null) all.push(fin);
-  caps.forEach(c => { if(c.v!=null) all.push(c.v); });
-  const x = all.length ? all.reduce((a,b)=>a+b,0)/all.length : .5;
-  const nCap = caps.filter(c=>c.v!=null).length;
-  const cover = ((finParts.length/FIN_FIELDS.length) + nCap)/5;
-  return {x:clamp(x,.03,.97), rx:.05+.20*(1-cover), fin, finN:finParts.length, caps, nCap};
-}
-
-function scoreMission(){
-  const vals = [];
-  MI_ITEMS.forEach((it,k) => {
-    const v = MI[k];
-    if(v==null || v==="skip") return;
-    vals.push(it.r ? 6-v : v);
-  });
-  const m = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  return {y: m==null?.5 : clamp((m-1.9)/2.6,.03,.97),
-          ry: m==null?.24 : .05+.18*(1-vals.length/MI_ITEMS.length), n:vals.length, mean:m};
-}
-
-/* Figure 3: Resources is vertical (y), Mission Integrity is horizontal (x). */
-const instQuad = (x,y) => y>=.5 ? (x>=.5?"leader":"empire") : (x>=.5?"niche":"fragile");
-
-async function placeInstitution(){
-  const name = ($("#inst-name").value||"").trim();
-  if(!name){ status("#inst-place-status","Enter an institution name first."); return; }
-  const R = scoreResources(), M = scoreMission();
-  if(R.finN + R.nCap === 0){
-    status("#inst-place-status","No evidence on the resources axis yet \u2014 fill in at least one indicator or capital judgment."); return; }
-  if(M.n === 0){
-    status("#inst-place-status","No evidence on the mission-integrity axis yet \u2014 answer at least one of the ten items."); return; }
-
-  let delta = 0, aiNote = null, aiNarr = null;
-  const text = ($("#mi-text").value||"").trim();
-  if(text.length > 60){
-    status("#inst-place-status",'<span class="spin"></span>Reading the mission evidence\u2026');
-    const j = await claudeMission(name, text, M.mean);
-    if(j){ delta = clamp(j.delta||0, -.15, .15); aiNote = j.note; aiNarr = j.narrative; }
-  }
-  const mx = clamp(M.y + delta, .03, .97);          // horizontal = mission integrity
-  const my = R.x;                                   // vertical   = resources
-  const q  = instQuad(mx, my);
-  const rec = {name, x:mx, y:my, rx:M.ry, ry:R.rx, q, delta, aiNote, aiNarr,
-    arch:S.arch, env:S.env, res:R, mi:M,
-    color: DOT_COLORS[S.insts.length % DOT_COLORS.length]};
-  S.insts.push(rec);
-  drawInsts();
-  $("#inst-result-card").hidden = false;
-  $("#inst-result").innerHTML = instHTML(rec);
-  status("#inst-place-status","");
-  try{ $("#inst-result-card").scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){}
-}
-
-function drawInsts(){
-  renderMatrix($("#mx-inst"), INST_CFG, S.insts.map((i,k) =>
-    ({x:i.x, y:i.y, rx:i.rx, ry:i.ry, color:i.color, n:String(k+1)})));
-  const list = $("#inst-list");
-  if(!S.insts.length){ list.innerHTML = `<li class="empty">No institutions plotted yet.</li>`; return; }
-  list.innerHTML = S.insts.map((i,k) =>
-    `<li><span class="swatch" style="background:${i.color}">${k+1}</span>${esc(i.name)}
-      <span class="qd">${esc(INST_Q[i.q].num)} \u00b7 ${esc(INST_Q[i.q].name)}</span></li>`).join("");
-}
-
-function nearEdge(i){
-  const b = [];
-  if(Math.abs(i.x-.5)<.08) b.push("the mission-integrity boundary");
-  if(Math.abs(i.y-.5)<.08) b.push("the resources boundary");
-  return b.length ? "This sits close to "+b.join(" and ")+", so the neighbouring quadrant is a live reading of the same evidence." : "";
-}
-
-const FIT_LABEL = {strong:"Strong fit", workable:"Workable", weak:"Poor fit", harmful:"Harmful"};
-
-function archetypeVerdict(q, arch){
-  const cw = CROSSWALK[q];
-  if(cw.unavailable.includes(arch)) return {k:"unavailable", t:"Structurally unavailable in this quadrant"};
-  if(cw.available.includes(arch) && cw.tempting===arch)
-    return {k:"tempting", t:"Available \u2014 and this quadrant's highest-risk move"};
-  if(cw.available.includes(arch)) return {k:"available", t:"Supported by this quadrant"};
-  if(cw.tempting===arch) return {k:"tempting", t:"The tempting move, not the available one"};
-  if(!cw.unavailable.length) return {k:"tempting", t:"Available on capacity \u2014 but not this quadrant's natural fit"};
-  return {k:"weak", t:"Not among this quadrant's available archetypes"};
-}
-
-function instHTML(i){
-  const Q = INST_Q[i.q], R = i.res;
-  let h = `<div class="verdict"><div class="k">${esc(i.name)}</div>
-    <h2>Quadrant ${esc(Q.num)} \u2014 ${esc(Q.name)}</h2>
-    <div class="small muted">${esc(Q.line)}</div>
-    <div class="conf">Based on ${R.finN} measured financial indicator${R.finN===1?"":"s"},
-      ${R.nCap} capital judgment${R.nCap===1?"":"s"}, and ${i.mi.n} mission-integrity response${i.mi.n===1?"":"s"}.
-      ${esc(nearEdge(i))}</div></div>`;
-
-  h += `<h3>Reading</h3><p>${esc(Q.read)}</p>`;
-  if(i.aiNarr) h += `<div class="narr">${esc(i.aiNarr)}</div>`;
-  if(i.aiNote){
-    const dir = i.delta>.01 ? "upward" : i.delta<-.01 ? "downward" : "left unchanged";
-    h += `<div class="callout"><strong>From the evidence you supplied.</strong> ${esc(i.aiNote)}
-      <br><span class="small muted">Mission-integrity estimate adjusted ${dir}${Math.abs(i.delta)>.01?" by "+(Math.abs(i.delta)*10).toFixed(1)+" points on a ten-point scale":""}.</span></div>`;
-  }
-
-  /* capital profile */
-  h += `<h3>Capital profile</h3><div>`;
-  const finLv = R.fin==null ? "na" : R.fin>=.66?"high": R.fin>=.35?"mid":"low";
-  h += `<div class="dom" data-lv="${finLv}"><span class="name">Financial capital
-      <span class="muted small">\u2014 ${R.finN} of ${FIN_FIELDS.length} indicators supplied</span></span>
-      <span class="bar"><i style="width:${R.fin==null?0:Math.round(R.fin*100)}%"></i></span>
-      <span class="tag">${R.fin==null?"not assessed": finLv==="high"?"deep": finLv==="mid"?"moderate":"thin"}</span></div>`;
-  R.caps.forEach(c => {
-    const lv = c.v==null?"na": c.v>=.7?"high": c.v>=.4?"mid":"low";
-    h += `<div class="dom" data-lv="${lv}"><span class="name">${esc(c.name)}</span>
-      <span class="bar"><i style="width:${c.v==null?0:Math.round(c.v*100)}%"></i></span>
-      <span class="tag">${c.v==null?"not judged": lv==="high"?"deep": lv==="mid"?"moderate":"thin"}</span></div>`;
-  });
-  h += `</div>`;
-
-  /* archetype cross-walk */
-  const cw = CROSSWALK[i.q];
-  h += `<h3>Archetype cross-walk</h3>`;
-  if(i.arch){
-    const v = archetypeVerdict(i.q, i.arch);
-    h += `<div class="verdict" style="margin:8px 0 16px;padding:16px 18px">
-      <div class="k">Says it is a</div>
-      <div style="font-family:'Instrument Serif',serif;font-size:26px;margin:2px 0 4px">${esc(ARCHETYPES[i.arch].name)}</div>
-      <div class="fitline" data-fit="${v.k==="available"?"strong":v.k==="tempting"?"workable":"weak"}">${esc(v.t)}</div></div>`;
-  }
-  if(i.arch === "hybrid"){
-    const thin = R.caps.filter(c => c.raw!=null && c.raw<=2).map(c=>c.name.toLowerCase());
-    if(thin.length) h += `<div class="callout"><strong>One qualification.</strong> A Hybrid Specialist goes deep
-      in an area it already has the capital to support. With ${esc(listify(thin))} judged thin, depth is being
-      built where none currently exists \u2014 which is a Hybrid Specialist ambition pursued on a different
-      quadrant's capital.</div>`;
-  }
-  h += `<p><strong>Most available here:</strong> ${esc(cw.availNote)}</p>`;
-  h += `<p><strong>Most tempting, highest risk:</strong> ${esc(cw.temptNote)}</p>`;
-  h += `<p><strong>Least available:</strong> ${esc(cw.unavailNote)}</p>`;
-
-  /* learning environments + student types served */
-  h += `<h3>Learning environments in this quadrant</h3>`;
-  const servable = [];
-  ENV_ORDER.forEach(id => {
-    const [fit, note] = ENV_BY_QUAD[i.q][id];
-    if(fit==="strong" || fit==="workable") servable.push(STUDENT_Q[ENVS[id].serves].name);
-    const isCurrent = i.env === id;
-    h += `<div class="envrow" data-fit="${fit}">
-      <div class="envhead"><span class="envname">${esc(ENVS[id].name)}</span>
-        ${isCurrent?'<span class="tag-inline" data-src="entered">currently investing here</span>':''}
-        <span class="fitbadge">${FIT_LABEL[fit]}</span></div>
-      <div class="envnote">${esc(note)}</div>
-      <div class="envserves">Built to serve <strong>${esc(STUDENT_Q[ENVS[id].serves].name)}</strong></div></div>`;
-  });
-
-  h += `<h3>Which students this institution can honestly serve</h3>`;
-  h += servable.length
-    ? `<p>On this quadrant position, the environments that hold up are the ones built for
-       <strong>${esc(listify(Array.from(new Set(servable))))}</strong>. Students outside that set can still be
-       admitted, and frequently are — but they will be taught in an environment that was not built for them,
-       which is the mismatch this whole framework exists to make visible.</p>`
-    : `<p>No environment on the table holds up at this quadrant position. That is not a statement about the
-       students; it is a statement about what this institution can currently deliver to anyone. The honest
-       first move is triage, not admissions.</p>`;
-
-  /* Figure 2 mismatch */
-  if(i.env){
-    const E = ENVS[i.env];
-    const capVal = (R.caps.find(c=>c.id===E.needs)||{}).raw;
-    if(capVal!=null && capVal<=2){
-      h += `<div class="callout" style="border-color:var(--bad)"><strong>Mismatch warning.</strong>
-        A ${esc(E.name)} runs on ${esc(E.needsName)}, and you've judged that capital thin. The pattern this
-        produces is not a weaker ${esc(E.name)} — it's a different and worse thing:
-        <strong>${esc(E.fail.toLowerCase())}</strong>.</div>`;
-    }
-  }
-
-  h += `<h3>Characteristic temptations</h3><ul>${Q.tempt.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  h += `<h3>Wise choices from here</h3><ul>${Q.wise.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
-  h += `<div class="callout"><strong>The binding constraint.</strong> ${esc(Q.constraint)}</div>`;
-  h += `<p><strong>Next honest move.</strong> ${esc(Q.next)}</p>`;
-  h += `<p><strong>Under AI stress.</strong> ${esc(Q.ai)}</p>`;
-
-  h += `<details class="note"><summary>How this placement was calculated</summary><div class="body">
-    The vertical axis compresses the five forms of institutional capital into one figure. Financial capital is
-    the mean of whatever measured indicators were supplied; human, reputational, design, and cultural capital
-    are your own 1&ndash;5 judgments. All five carry equal weight, and blank entries are dropped rather than
-    scored as zero, which widens the ellipse instead. The horizontal axis is the mean of the answered
-    mission-integrity items, adjusted by at most 0.15 on a 0&ndash;1 scale when free-text evidence is supplied
-    and a key is configured. Public data can carry most of the vertical axis. It cannot touch the horizontal
-    one at all, which is the argument for having it.</div></details>`;
-  return h;
-}
-
-async function claudeMission(name, text, itemMean){
-  const out = await callClaude(VOICE + "\nYou output valid JSON only when asked for JSON.",
-`An institution is being placed on a mission-integrity axis. Mission integrity means how consistently actual decisions track stated purpose — not whether the mission is admirable. Drift is rarely a single bad decision; it accumulates.
-
-Institution: ${name}
-Self-reported questionnaire mean (1-5, higher = more disciplined): ${itemMean==null?"not answered":itemMean.toFixed(2)}
-
-Evidence supplied by the user (mission statement and recent decisions):
-"""
-${text.slice(0,6000)}
-"""
-
-Read this for the gap between stated purpose and revealed priority. Self-report on this axis skews generous, so look for decisions that contradict the stated mission, capital spent on visibility rather than on existing strength, and mission language vague enough to justify anything.
-
-Reply with ONLY a JSON object, no markdown fences and no preamble:
-{"delta": <number between -0.15 and 0.15, adjustment to the 0-1 mission-integrity estimate>,
- "note": "<one or two sentences naming the specific evidence that moved it, or that nothing did>",
- "narrative": "<90-130 words on what the stated-versus-revealed gap looks like here, addressed to the institution as 'you'>"}`, 900);
-  if(!out) return null;
-  try{ const m = out.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; }catch(e){ return null; }
-}
-
-/* ===================== PUBLIC DATA ===================== */
-const SC = "https://api.data.gov/ed/collegescorecard/v1/schools";
-function status(sel, html){ $(sel).innerHTML = html; }
-function setFin(id, v, src){
-  if(v==null || isNaN(v)) return false;
-  $("#rf-"+id).value = Math.round(v*10)/10; S.src[id] = src; return true;
-}
-
-async function lookupInstitution(){
-  const name = ($("#inst-name").value||"").trim();
-  if(!name){ status("#inst-status","Enter a name first."); return; }
-  status("#inst-status",'<span class="spin"></span>Looking up public data\u2026');
-  const got = []; let unitid = null;
-  try{
-    const u = `${SC}?api_key=${encodeURIComponent(SCKEY())}&school.name=${encodeURIComponent(name)}`+
-      `&fields=id,school.name,school.city,school.state,latest.student.size,2017.student.size&per_page=1`;
-    const r = await fetch(u);
-    if(r.ok){
-      const j = await r.json(), d = (j.results&&j.results[0])||null;
-      if(d){
-        unitid = String(d.id);
-        $("#inst-name").value = d["school.name"] || name;
-        const now = d["latest.student.size"], then = d["2017.student.size"];
-        if(now && then && setFin("enr5",(now-then)/then*100,"live")) got.push("enrolment trend");
-      }
-    }
-  }catch(e){}
-
-  let baked = unitid && BAKED[unitid] ? BAKED[unitid] : null;
-  if(!baked){
-    const lc = name.toLowerCase();
-    const hit = Object.values(BAKED).find(b =>
-      b.n.toLowerCase()===lc || b.n.toLowerCase().includes(lc) || lc.includes(b.n.toLowerCase()));
-    if(hit) baked = hit;
-  }
-  if(baked){
-    if(setFin("opm", baked.opm, "baked")) got.push("operating margin");
-    if(setFin("defy", baked.defy, "baked")) got.push("deficit years");
-  }
-  paintTags();
-  status("#inst-status", got.length
-    ? `Filled ${got.length}: ${got.join(", ")}. Endowment per FTE and tuition dependence aren't in these feeds \u2014 enter them yourself.`
-    : "No public data came back \u2014 network, key, or an institution outside the stored set. Enter what you know by hand; the estimate widens to match.");
-}
-
-/* ===================== WORKED CASE ===================== */
-function loadAshcombe(){
-  resetInstForm();
-  $("#inst-name").value = ASHCOMBE.name;
-  Object.entries(ASHCOMBE.fin).forEach(([k,v]) => { $("#rf-"+k).value = v; S.src[k] = "entered"; });
-  Object.entries(ASHCOMBE.cap).forEach(([k,v]) => { CAP[k] = v; });
-  ASHCOMBE.mi.forEach((v,k) => { MI[k] = v; });
-  $("#mi-text").value = ASHCOMBE.text;
-  S.arch = ASHCOMBE.archetype; S.env = ASHCOMBE.env;
-  $$("[data-cap]").forEach(x => x.setAttribute("aria-pressed", String(CAP[x.dataset.cap]===+x.dataset.val)));
-  $$("[data-mi]").forEach(x => x.setAttribute("aria-pressed",
-    String(MI[x.dataset.mi] === (x.dataset.val==="skip"?"skip":+x.dataset.val))));
-  $$("[data-arch]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.arch===S.arch)));
-  $$("[data-env]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.env===S.env)));
-  paintTags();
-  status("#inst-status","Loaded the Chapter 1 worked case. Press Place on the matrix.");
-}
-
-function resetInstForm(){
-  FIN_FIELDS.forEach(f => $("#rf-"+f.id).value = "");
-  CAPITALS.forEach(c => delete CAP[c.id]);
-  MI_ITEMS.forEach((_,k) => delete MI[k]);
-  $("#inst-name").value = ""; $("#mi-text").value = "";
-  S.src = {}; S.arch = null; S.env = null;
-  $$("#cap-sliders .pip, #mi-items .pip, [data-arch], [data-env]").forEach(p => p.setAttribute("aria-pressed","false"));
-  paintTags(); status("#inst-status",""); status("#inst-place-status","");
-}
-
-/* ===================== WIRING ===================== */
-$("#consent-box").addEventListener("change", e => $("#consent-next").disabled = !e.target.checked);
-$("#consent-next").addEventListener("click", () => showStep("mode"));
-$$("[data-mode]").forEach(b => b.addEventListener("click", () => {
-  S.mode = b.dataset.mode;
-  $$("[data-mode]").forEach(x => x.setAttribute("aria-pressed", String(x===b)));
-  $("#mode-next").disabled = false;
-}));
-$("#mode-next").addEventListener("click", () => showStep("intel"));
-$$("[data-src-choice]").forEach(b => b.addEventListener("click", () => {
-  S.intelSrc = b.dataset.srcChoice;
-  $$("[data-src-choice]").forEach(x => x.setAttribute("aria-pressed", String(x===b)));
-  ["sat","act","none"].forEach(k => $("#intel-"+k).hidden = (k!==S.intelSrc));
-}));
-$("#intel-next").addEventListener("click", () => { S.readyPage=0; showStep("ready"); renderReady(); });
-$("#intel-skip").addEventListener("click", () => { S.intelSrc="skip"; S.readyPage=0; showStep("ready"); renderReady(); });
-$("#ready-next").addEventListener("click", () => {
-  const items = activeItems();
-  if((S.readyPage+1)*PAGE >= items.length) computeStudent();
-  else { S.readyPage++; renderReady(); }
-});
-$("#ready-back").addEventListener("click", () => {
-  if(S.readyPage===0) showStep("intel"); else { S.readyPage--; renderReady(); }
-});
-$("#student-restart").addEventListener("click", () => {
-  S.mode=null; S.intelSrc=null; S.answers={}; S.selfAns={}; S.randoAns={}; S.readyPage=0; S.student=null;
-  $("#consent-box").checked=false; $("#consent-next").disabled=true;
-  $$("[data-mode],[data-src-choice]").forEach(x => x.setAttribute("aria-pressed","false"));
-  $("#mode-next").disabled = true;
-  ["sat-total","sat-ebrw","sat-math","act-comp","ap-taken","ap-passed"].forEach(id => $("#"+id).value="");
-  $$("#intel-selfitems .pip").forEach(p => p.setAttribute("aria-pressed","false"));
-  renderMatrix($("#mx-student"), STUDENT_CFG, []);
-  showStep("consent");
-});
-
-$("#inst-lookup").addEventListener("click", lookupInstitution);
-$("#inst-place").addEventListener("click", placeInstitution);
-$("#load-ashcombe").addEventListener("click", loadAshcombe);
-$("#inst-reset-form").addEventListener("click", resetInstForm);
-$("#inst-clear").addEventListener("click", () => {
-  S.insts = []; drawInsts(); $("#inst-result-card").hidden = true;
-});
-$("#test-claude").addEventListener("click", async () => {
-  status("#setup-status",'<span class="spin"></span>Testing\u2026');
-  const out = await callClaude("Reply with exactly: ok", "Say ok.", 20);
-  status("#setup-status", out ? "Connected. Written interpretations are on."
-    : "No connection. Everything still works \u2014 interpretations fall back to the built-in rules.");
-});
-
-/* ===================== INIT ===================== */
-(function init(){
-  $("#intel-selfitems").innerHTML = SELF_ITEMS.map((it,k) => likertRow("s"+k, it.t, "A"+(k+1), S.selfAns)).join("");
-  buildInstForms();
-  renderMatrix($("#mx-student"), STUDENT_CFG, []);
-  renderMatrix($("#mx-inst"), INST_CFG, []);
-  renderMatrix($("#thumb-student"), STUDENT_CFG, [{x:.74,y:.7,rx:.09,ry:.1}], true);
-  renderMatrix($("#thumb-inst"), INST_CFG,
-    [{x:.74,y:.28,rx:.09,ry:.1,color:"#5FD3B2"},{x:.26,y:.76,rx:.1,ry:.09,color:"#FF8A5B"}], true);
-  showStep("consent");
-})();
-</script>
-</body>
-</html>
+    <div>
+      <h3 class="about-heading">The Institutional Matrix</h3>
+      <p>Colleges and universities differ not just in prestige or price but in the kind of learning environment they create. The institutional assessment measures Mission Intensity and Institutional Capability, placing an institution in one of four learning environment types.</p>
+      <p>Each type carries distinct implications for student outcomes, faculty culture, and strategic direction — and each comes with a recommended path toward stronger alignment between mission and capacity.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    Fits and Dreams &nbsp;·&nbsp; Student Viability Framework &nbsp;·&nbsp; Western New England University
+  </footer>
+
+</div>

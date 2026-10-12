@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Student Viability Assessment</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(135deg,#f8fafc 0%,#e0e7ff 100%);padding:20px 16px;font-family:system-ui,-apple-system,sans-serif}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .fade{animation:fadeIn 0.4s ease}
+  .card{background:white;border-radius:20px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:680px;margin:0 auto}
+  .header{text-align:center;margin-bottom:28px}
+  .header .eyebrow{font-size:13px;font-weight:700;letter-spacing:2px;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+  .header h1{font-size:26px;font-weight:900;color:#1f2937;line-height:1.2}
+  .header p{color:#6b7280;font-size:14px;margin-top:8px}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px}
+  .progress-track{background:#e5e7eb;border-radius:999px;height:6px;margin-bottom:20px}
+  .progress-fill{background:#4f46e5;border-radius:999px;height:6px;transition:width 0.3s}
+  .q-section{font-size:12px;font-weight:600;letter-spacing:1px;color:#6b7280;text-transform:uppercase;margin-bottom:8px}
+  .q-prompt{font-size:17px;font-weight:600;color:#1f2937;margin-bottom:20px;line-height:1.5}
+  .options{display:flex;flex-direction:column;gap:10px}
+  .opt-btn{background:#f9fafb;border:2px solid #e5e7eb;border-radius:10px;padding:12px 16px;text-align:left;cursor:pointer;color:#374151;font-size:15px;transition:all 0.2s;font-family:inherit}
+  .opt-btn:hover{background:#ede9fe;border-color:#7c3aed}
+  .opt-btn.selected{background:#ede9fe;border-color:#7c3aed;color:#4c1d95;font-weight:600}
+  .opt-btn.correct{background:#dcfce7;border-color:#16a34a;color:#166534;font-weight:600}
+  .opt-btn.wrong{background:#fee2e2;border-color:#dc2626;color:#991b1b;font-weight:600}
+  .opt-letter{margin-right:10px;opacity:0.5}
+  .feedback{margin-top:12px;font-size:13px;font-weight:600}
+  .feedback.ok{color:#166534}.feedback.bad{color:#991b1b}
+  .btn{border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s}
+  .btn:hover{opacity:0.88}
+  .btn-primary{background:#4f46e5;color:white;width:100%;padding:16px}
+  .btn-green{background:#059669;color:white}
+  .btn-ghost{background:white;border:2px solid #e5e7eb;color:#6b7280;font-size:13px;padding:10px 24px}
+  .intro-box{background:#f8fafc;border-radius:12px;padding:18px;margin-bottom:24px}
+  .intro-box .box-title{font-weight:700;color:#374151;margin-bottom:12px}
+  .intro-part{display:flex;gap:12px;margin-bottom:12px}
+  .intro-part:last-child{margin-bottom:0}
+  .intro-part-icon{font-size:22px;flex-shrink:0}
+  .intro-part-title{font-weight:600;color:#374151;font-size:14px}
+  .intro-part-desc{color:#6b7280;font-size:13px}
+  .intro-part-time{color:#9ca3af;font-size:12px}
+  .transition-card{text-align:center;padding:40px}
+  .transition-icon{font-size:48px;margin-bottom:16px}
+  .transition-card h2{font-size:22px;font-weight:800;color:#1f2937;margin-bottom:12px}
+  .transition-card p{color:#6b7280;margin-bottom:28px;line-height:1.7}
+  .result-header{border-radius:16px;padding:24px;text-align:center;margin-bottom:20px}
+  .result-emoji{font-size:52px;margin-bottom:8px}
+  .result-type{font-size:28px;font-weight:800;margin-bottom:4px}
+  .result-tagline{font-size:14px;color:#6b7280;margin-bottom:16px}
+  .result-scores{display:flex;justify-content:center;gap:24px}
+  .score-item{text-align:center}
+  .score-val{font-size:22px;font-weight:800}
+  .score-label{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px}
+  .score-divider{width:1px;background:#e5e7eb}
+  .matrix-box{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:20px;margin-bottom:16px;text-align:center}
+  .matrix-title{font-size:13px;font-weight:700;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;text-align:left}
+  .tab-row{display:flex;gap:8px;margin-bottom:16px}
+  .tab-btn{flex:1;padding:10px 0;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:13px;transition:all 0.2s;font-family:inherit}
+  .tab-btn.active{color:white}
+  .tab-btn.inactive{background:#f3f4f6;color:#6b7280}
+  .profile-section{background:white;border-radius:12px;border:1px solid #e5e7eb;padding:20px;margin-bottom:14px}
+  .profile-section h3{font-weight:700;color:#374151;margin-bottom:8px}
+  .profile-section p{color:#4b5563;line-height:1.7;font-size:15px}
+  .profile-section ul{padding-left:20px}
+  .profile-section li{color:#4b5563;margin-bottom:6px;font-size:14px}
+  .needs-box{border-radius:12px;padding:20px;margin-bottom:14px}
+  .needs-box h3{font-weight:700;margin-bottom:8px}
+  .needs-box p{margin:0;font-size:14px;line-height:1.6}
+  .warning-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;font-size:13px;color:#92400e;margin-bottom:12px}
+  .college-card{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:12px}
+  .college-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .college-name{font-weight:700;color:#1f2937;font-size:16px}
+  .college-type{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;border:1px solid;white-space:nowrap;margin-left:8px;flex-shrink:0}
+  .college-why{color:#6b7280;margin:0;font-size:14px;line-height:1.6}
+  .retake-row{text-align:center;margin-top:20px}
+  /* Institution Q overlay */
+  .inst-q-box{background:#f0f9ff;border:2px solid #7dd3fc;border-radius:16px;padding:24px;margin-bottom:16px;text-align:center}
+  .inst-q-box h3{font-size:20px;font-weight:800;color:#0c4a6e;margin-bottom:10px}
+  .inst-q-box p{color:#0369a1;font-size:14px;line-height:1.6;margin-bottom:20px}
+  .inst-btn-row{display:flex;gap:12px;justify-content:center}
+  .btn-yes{background:#0ea5e9;color:white;padding:12px 28px}
+  .btn-no{background:#f3f4f6;color:#6b7280;padding:12px 28px;border:2px solid #e5e7eb}
+  /* State filter */
+  .state-filter-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .state-filter-row label{font-size:13px;font-weight:600;color:#374151}
+  .state-select{border:2px solid #e5e7eb;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;color:#374151}
+  .state-select:focus{border-color:#4f46e5}
+</style>
+</head>
+<body>
+
+<div class="header fade">
+  <div class="eyebrow">Student Viability Assessment</div>
+  <h1>Where do you fit?</h1>
+  <p>Discover your learning archetype and find environments built for you.</p>
+</div>
+
+<!-- INTRO -->
+<div id="view-intro" class="card fade">
+  <h2 style="font-size:20px;font-weight:800;color:#1f2937;margin-bottom:12px">About This Assessment</h2>
+  <p style="color:#4b5563;line-height:1.7;margin-bottom:16px">This tool measures two independent dimensions — <strong>Academic Readiness</strong> (abstract reasoning, verbal ability, numerical thinking) and <strong>Developmental Readiness</strong> (executive function, emotional regulation, identity clarity, social fluency) — to place you on the Student Viability Matrix.</p>
+  <p style="color:#4b5563;line-height:1.7;margin-bottom:20px">Your results reflect <em>where you are right now</em> — a developmental starting point, not a permanent verdict.</p>
+  <div class="intro-box">
+    <div class="box-title">What to expect:</div>
+    <div class="intro-part">
+      <div class="intro-part-icon">🧠</div>
+      <div>
+        <div class="intro-part-title">Part 1: Academic Readiness</div>
+        <div class="intro-part-desc">20 reasoning questions — work quickly and trust your instincts. No calculators needed.</div>
+        <div class="intro-part-time">Est. ~12 min</div>
+      </div>
+    </div>
+    <div class="intro-part">
+      <div class="intro-part-icon">🌱</div>
+      <div>
+        <div class="intro-part-title">Part 2: Developmental Readiness</div>
+        <div class="intro-part-desc">20 reflective self-assessment questions. Answer honestly — there are no right or wrong answers.</div>
+        <div class="intro-part-time">Est. ~10 min</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="startIQ()">Begin Assessment →</button>
+</div>
+
+<!-- IQ QUESTION -->
+<div id="view-iq" class="card fade" style="display:none">
+  <div class="progress-label"><span>Part 1: Academic Readiness · Reasoning Questions</span><span id="iq-counter">0/20</span></div>
+  <div class="progress-track"><div class="progress-fill" id="iq-bar" style="width:0%"></div></div>
+  <div id="iq-section" class="q-section"></div>
+  <div id="iq-prompt" class="q-prompt"></div>
+  <div id="iq-options" class="options"></div>
+  <div id="iq-feedback" class="feedback" style="margin-top:12px"></div>
+</div>
+
+<!-- TRANSITION -->
+<div id="view-transition" class="card fade transition-card" style="display:none">
+  <div class="transition-icon">✅</div>
+  <h2>Part 1 Complete</h2>
+  <p>You've finished the reasoning section. Now we'll explore your <strong>Developmental Readiness</strong> — your maturity, self-regulation, identity, and social fluency.<br><br>Answer honestly. These questions have no right or wrong answers.</p>
+  <button class="btn btn-green" onclick="startDR()">Continue to Part 2 →</button>
+</div>
+
+<!-- DR QUESTION -->
+<div id="view-dr" class="card fade" style="display:none">
+  <div class="progress-label"><span>Part 2: Developmental Readiness</span><span id="dr-counter">0/20</span></div>
+  <div class="progress-track"><div class="progress-fill" id="dr-bar" style="width:0%;background:#059669"></div></div>
+  <div id="dr-section" class="q-section"></div>
+  <div id="dr-prompt" class="q-prompt"></div>
+  <div id="dr-options" class="options"></div>
+</div>
+
+<!-- INSTITUTION PROMPT -->
+<div id="view-inst-q" class="card fade" style="display:none">
+  <div class="inst-q-box">
+    <div style="font-size:48px;margin-bottom:12px">🏛️</div>
+    <h3>Would you like college recommendations?</h3>
+    <p>Based on your placement on the Student Viability Matrix, we can suggest 3–5 institutions that offer the strongest developmental <strong>fit</strong> for where you are right now — not just the most prestigious options.</p>
+    <div class="inst-btn-row">
+      <button class="btn btn-yes" onclick="goToResults(true)">Yes, recommend institutions →</button>
+      <button class="btn btn-no btn" onclick="goToResults(false)">No, just show my profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="view-results" style="display:none;max-width:680px;margin:0 auto" class="fade">
+  <div id="res-header" class="result-header"></div>
+  <div class="matrix-box">
+    <div class="matrix-title">Your Position on the Viability Matrix</div>
+    <canvas id="matrix-canvas" width="580" height="220" style="max-width:100%;border-radius:8px"></canvas>
+  </div>
+  <div class="tab-row" id="res-tab-row"></div>
+  <div id="panel-profile"></div>
+  <div id="panel-colleges" style="display:none"></div>
+  <div class="retake-row">
+    <button class="btn btn-ghost" onclick="retake()">↩ Retake Assessment</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const IQ_Q = [
+  {sec:"Pattern Recognition",prompt:"Which number continues the series? 2, 6, 18, 54, ___",opts:["108","162","72","216"],ans:1},
+  {sec:"Verbal Analogies",prompt:"SYMPHONY is to COMPOSER as NOVEL is to:",opts:["Reader","Publisher","Author","Critic"],ans:2},
+  {sec:"Logical Reasoning",prompt:"All roses are flowers. Some flowers fade quickly. Therefore:",opts:["All roses fade quickly","Some roses may fade quickly","No roses fade quickly","Roses are not flowers"],ans:1},
+  {sec:"Numerical Reasoning",prompt:"If a store reduces a $120 item by 25%, then adds 10% tax, what is the final price?",opts:["$90.00","$99.00","$96.50","$108.00"],ans:1},
+  {sec:"Abstract Reasoning",prompt:"Which word does NOT belong with the others?",opts:["Sonata","Concerto","Fresco","Symphony"],ans:2},
+  {sec:"Pattern Recognition",prompt:"What comes next? A1, C3, E5, G7, ___",opts:["H8","I9","J10","H9"],ans:1},
+  {sec:"Verbal Reasoning",prompt:"Choose the word most similar in meaning to EPHEMERAL:",opts:["Permanent","Transient","Vibrant","Obscure"],ans:1},
+  {sec:"Logical Reasoning",prompt:"If all managers are employees, and some employees are part-time, which must be true?",opts:["All managers are part-time","No managers are part-time","Some managers might be part-time","All part-time workers are managers"],ans:2},
+  {sec:"Spatial Reasoning",prompt:"A cube has 6 faces. If you unfold it into a flat cross shape, how many squares are in that cross?",opts:["4","5","6","8"],ans:2},
+  {sec:"Numerical Patterns",prompt:"What is the missing number? 1, 4, 9, 16, 25, ___",opts:["30","36","32","49"],ans:1},
+  {sec:"Verbal Analogies",prompt:"CARTOGRAPHER is to MAP as CHOREOGRAPHER is to:",opts:["Stage","Music","Dance","Script"],ans:2},
+  {sec:"Abstract Reasoning",prompt:"Three of these four words share a property. Which is the odd one out?",opts:["Kilometer","Liter","Second","Celsius"],ans:3},
+  {sec:"Logical Sequences",prompt:"If Monday=1, Wednesday=3, Friday=5, what day equals 7?",opts:["Saturday","Sunday","Monday (next week)","Tuesday"],ans:1},
+  {sec:"Verbal Reasoning",prompt:"MENDACIOUS most closely means:",opts:["Threatening","Untruthful","Careful","Generous"],ans:1},
+  {sec:"Numerical Reasoning",prompt:"A train travels 60 mph for 2.5 hours, then 80 mph for 1.5 hours. Total distance?",opts:["260 miles","270 miles","280 miles","290 miles"],ans:1},
+  {sec:"Logical Reasoning",prompt:"In a room of 30 students, 18 play sports, 12 play music, and 5 play both. How many do neither?",opts:["3","5","7","10"],ans:1},
+  {sec:"Abstract Reasoning",prompt:"Which concept BEST completes this analogy: Democracy is to Autocracy as Cooperation is to:",opts:["Teamwork","Conflict","Dominance","Negotiation"],ans:2},
+  {sec:"Pattern Recognition",prompt:"What is the next term? 3, 5, 11, 29, 83, ___",opts:["164","245","251","248"],ans:2},
+  {sec:"Verbal Reasoning",prompt:"Identify the statement that represents an INFERENCE rather than a direct observation:",opts:["The pavement is wet","It must have rained recently","There are puddles near the curb","A car drove through the puddle"],ans:1},
+  {sec:"Numerical Reasoning",prompt:"If 5 machines make 5 widgets in 5 minutes, how many minutes do 100 machines need to make 100 widgets?",opts:["100","20","5","1"],ans:2}
+];
+
+const DR_Q = [
+  {sec:"Executive Function",prompt:"When you have a major project due in three weeks, you typically:",opts:["Break it into steps and start immediately","Start about a week before and plan as you go","Begin a few days before with a push","Start the night before (or the day of)"],w:[4,3,2,1]},
+  {sec:"Emotional Regulation",prompt:"When you receive critical feedback on work you put effort into, your most honest reaction is:",opts:["Reflect on it carefully and use it to improve","Feel stung briefly, then work to apply it","Feel defensive and need time before considering it","Feel demotivated and question whether to continue"],w:[4,3,2,1]},
+  {sec:"Vocational Identity",prompt:"How clearly can you describe what you want to do with your life after school?",opts:["Very clearly — I have a specific direction and am working toward it","Fairly clear — I have a strong area of interest even if the exact path isn't set","Somewhat uncertain — I have some ideas but feel pulled in different directions","Quite uncertain — I'm still figuring out who I am and what matters to me"],w:[4,3,2,1]},
+  {sec:"Social Fluency",prompt:"When starting at a new school or job, you typically:",opts:["Quickly read the culture and adapt your communication to fit","Take a few weeks to observe, then integrate comfortably","Feel somewhat awkward for a while before finding your footing","Struggle significantly with social dynamics in new environments"],w:[4,3,2,1]},
+  {sec:"Self-Regulation",prompt:"On a day with no obligations or schedule, you most often:",opts:["Create your own structure and work toward personal goals","Mix productive work with leisure in a reasonably balanced way","Intend to be productive but find the day slipping away","Have significant difficulty doing anything goal-directed"],w:[4,3,2,1]},
+  {sec:"Resilience",prompt:"When an important plan falls through unexpectedly, you usually:",opts:["Quickly regroup, adjust, and move forward with a new approach","Feel frustrated but recover and adapt within a day or two","Feel stuck for a while before finding a path forward","Find it very hard to recover — setbacks derail your momentum significantly"],w:[4,3,2,1]},
+  {sec:"Institutional Fluency",prompt:"When navigating bureaucratic systems (schools, applications, offices), you:",opts:["Understand the unspoken rules and work them confidently","Figure things out with some research and a few missteps","Often feel confused about how things 'really work'","Frequently feel lost, frustrated, or like the system isn't designed for you"],w:[4,3,2,1]},
+  {sec:"Goal Orientation",prompt:"How far ahead do your most meaningful goals tend to look?",opts:["3–10 years — I think in terms of long-term career and life trajectories","1–3 years — I have medium-term goals I'm actively working toward","Weeks to months — I focus mostly on what's in front of me","Day to day — I find it hard to maintain focus on longer-horizon goals"],w:[4,3,2,1]},
+  {sec:"Responsibility & Follow-through",prompt:"People who know you well would most likely say you are:",opts:["Highly dependable — you consistently do what you say you will","Generally reliable, with occasional lapses when overwhelmed","Inconsistent — your follow-through varies significantly by context","Often unreliable when it comes to commitments"],w:[4,3,2,1]},
+  {sec:"Stress Tolerance",prompt:"During periods of high pressure (exams, deadlines, personal challenges), you:",opts:["Generally function well — pressure often sharpens your focus","Function adequately but need deliberate strategies to manage","Performance and mood drop noticeably under sustained pressure","Struggle significantly — high stress tends to derail you"],w:[4,3,2,1]},
+  {sec:"Help-Seeking",prompt:"When you need academic or professional support, you:",opts:["Proactively seek it out and make good use of available resources","Usually seek help, though sometimes wait longer than you should","Often hesitate to ask — you prefer to figure things out alone even when struggling","Rarely or never ask for help, even when it would clearly benefit you"],w:[4,3,2,1]},
+  {sec:"Identity Clarity",prompt:"When you describe yourself to others, you tend to:",opts:["Have a clear and stable sense of your values, strengths, and identity","Have a fairly stable self-concept with some areas still forming","Feel uncertain about who you are — your self-description shifts significantly","Find it genuinely difficult to describe yourself with any confidence"],w:[4,3,2,1]},
+  {sec:"Motivation",prompt:"Your motivation to work hard is primarily driven by:",opts:["Internal purpose — you're motivated by meaning, mastery, or a clear goal","A mix of internal drive and external accountability","Primarily external — deadlines, grades, or others' expectations keep you going","You find it consistently hard to stay motivated in most areas"],w:[4,3,2,1]},
+  {sec:"Adaptability",prompt:"When a course or job is not what you expected, you typically:",opts:["Adapt your approach and find a way to extract value from it","Work through the disappointment and adjust your expectations","Disengage partially — your effort drops when motivation isn't there","Disengage significantly or abandon the commitment altogether"],w:[4,3,2,1]},
+  {sec:"Financial & Practical Maturity",prompt:"Regarding managing your own finances and practical life responsibilities, you:",opts:["Handle them independently and proactively","Manage adequately with occasional help or guidance","Struggle with consistency — practical responsibilities often pile up","Find managing practical life tasks very difficult without significant support"],w:[4,3,2,1]},
+  {sec:"Academic Self-Knowledge",prompt:"How well do you understand your own academic strengths and weaknesses?",opts:["Very well — you adjust your strategies based on how you learn","Fairly well — you have a general sense of where you're strong and weak","Somewhat — you have hunches but often feel uncertain","Not very well — you're often surprised by your performance"],w:[4,3,2,1]},
+  {sec:"Social Capital",prompt:"When you think about people who could support your career or education (mentors, networks, advisors), you:",opts:["Have a meaningful network and actively cultivate relationships","Have some connections and are slowly building more","Have limited connections but recognize you should build more","Feel largely without guides or professional connections"],w:[4,3,2,1]},
+  {sec:"Conflict Management",prompt:"When you have a significant disagreement with a teacher, supervisor, or peer, you:",opts:["Address it directly but diplomatically, with an eye toward resolution","Work through it, though it may take time or feel uncomfortable","Often avoid or delay confronting it — conflict is highly uncomfortable","Tend to escalate, withdraw, or act in ways that worsen the situation"],w:[4,3,2,1]},
+  {sec:"Curiosity & Growth Mindset",prompt:"How do you typically view your own intelligence and abilities?",opts:["As highly developable — effort and learning expand your capabilities","As mostly growable, with some traits that feel more fixed","As somewhat fixed — you tend to stick to areas where you already excel","As largely fixed — you don't feel significant growth is realistic"],w:[4,3,2,1]},
+  {sec:"Autonomy Management",prompt:"In an unstructured learning environment (independent study, online course, open-ended project), you:",opts:["Thrive — you create your own milestones and drive the work","Do reasonably well with some self-imposed structure","Struggle — without external structure you find it hard to make progress","Find it very difficult — unstructured learning tends to stall out for you"],w:[4,3,2,1]}
+];
+
+// ─── PROFILES ─────────────────────────────────────────────────────────────────
+// Changed: "Practitioners" → "Pragmatists", "At-Risk" → "Aspirants", axis label "Intelligence" → "Academic Readiness"
+const PROFILES = {
+  Competitor:{color:"#4f46e5",bg:"#eef2ff",border:"#818cf8",emoji:"🏆",
+    tagline:"High Academic Readiness · High Developmental Readiness",
+    desc:"You arrive with a well-developed package of capital: strong abstract reasoning, robust executive function, and institutional fluency. You thrive under pressure, set long time horizons, and can self-direct your learning effectively.",
+    strengths:["Self-directed learning","Strategic long-term planning","Navigating complex institutions","High stress tolerance","Peer leadership"],
+    risks:["Burnout from relentless striving","Imposter syndrome in elite cohorts","Over-competitiveness undermining collaboration","Difficulty with ambiguity or setbacks"],
+    needs:"Challenge, intellectual stretch, and mentors who protect your sustainability as much as your performance.",
+    colleges:[
+      {name:"University of Chicago",type:"Research University",why:"Rigorous, discussion-heavy Core Curriculum rewards high cognitive endurance and deep intellectual engagement."},
+      {name:"MIT / Caltech",type:"Technical Research University",why:"Exceptional density of peer intellectual competition; problem-set culture built for students who thrive under sustained pressure."},
+      {name:"Williams / Amherst College",type:"Liberal Arts College",why:"Close faculty mentorship combined with serious academic rigor; develops whole-person excellence without sacrificing intellectual depth."},
+      {name:"Georgetown / Vanderbilt",type:"Selective Research University",why:"Strong professional networks, leadership culture, and a competitive but collaborative peer cohort."},
+      {name:"Yale / Princeton",type:"Ivy League",why:"Designed precisely for this archetype: seminar culture, research opportunity, and a peer network of similarly high-capital students."}
+    ]},
+  Explorer:{color:"#0891b2",bg:"#ecfeff",border:"#67e8f9",emoji:"🧭",
+    tagline:"High Academic Readiness · Lower Developmental Readiness",
+    desc:"You have real intellectual horsepower — strong abstract reasoning, verbal ability, and creative thinking. But your executive function, identity clarity, or emotional regulation may not yet match your cognitive potential. You're not 'behind' — you're still becoming.",
+    strengths:["Abstract and conceptual thinking","Creative problem-solving","Intense curiosity","Capacity for deep learning when engaged","Originality"],
+    risks:["Procrastination and inconsistent follow-through","Drifting between interests without committing","Struggling with deadlines or open-ended environments","Underperforming relative to your actual ability"],
+    needs:"Structured exploration: mentorship, scaffolded deadlines, identity formation opportunities, and time before high-pressure academic commitment.",
+    colleges:[
+      {name:"Colorado College",type:"Block Plan Liberal Arts",why:"Single-subject immersion per 3.5-week block; ideal for Explorers who excel when they can focus deeply without parallel demands."},
+      {name:"St. John's College (Annapolis/Santa Fe)",type:"Great Books Liberal Arts",why:"Small, structured Socratic dialogue; no majors — all inquiry. Creates identity through sustained intellectual conversation."},
+      {name:"Warren Wilson College",type:"Work-Study-Service Liberal Arts",why:"Integrates work, academics, and service — builds maturity capital alongside intellectual development."},
+      {name:"Community College → Transfer Track",type:"Two-Year / Transfer Pathway",why:"Lower-stakes environment to develop executive function, clarify interests, and build a track record before a four-year commitment."},
+      {name:"Gap Year Program (e.g., City Year, AmeriCorps)",type:"Structured Pre-College Gap",why:"Builds maturity, identity, and resilience before academic commitment; converts vague potential into directional readiness."}
+    ]},
+  Pragmatist:{color:"#059669",bg:"#f0fdf4",border:"#6ee7b7",emoji:"🔧",
+    tagline:"Average Academic Readiness · High Developmental Readiness",
+    desc:"You bring one of the most undervalued forms of capital to the table: mature, reliable, practical competence. You follow through, show up, and engage seriously with real-world tasks. In applied, structured settings, you outperform students with higher scores who lack your consistency and work ethic.",
+    strengths:["Dependability and follow-through","Practical, applied intelligence","Real-world judgment","Strong work ethic","Emotional stability under structure"],
+    risks:["Misaligned into abstract academic tracks not designed for you","Internalizing mismatch as personal failure","Accumulating debt in programs that don't honor your strengths","Underestimated by prestige-focused systems"],
+    needs:"Applied, skills-based learning with clear vocational pathways, visible outcomes, and respect for practical intelligence.",
+    colleges:[
+      {name:"Purdue Polytechnic / Wentworth Institute of Technology",type:"Applied Technology College",why:"Hands-on, project-based learning; respects practical intelligence with clear career outcomes."},
+      {name:"Community College + Apprenticeship",type:"Vocational-Technical Track",why:"The most direct alignment of learning with real-world competence; builds credentials with minimal debt."},
+      {name:"Culinary Institute of America",type:"Specialized Professional College",why:"Intensive, craft-focused; rewards discipline, consistency, and mastery — exactly Pragmatist strengths."},
+      {name:"Arizona State University (Applied Programs)",type:"Large Applied State University",why:"Flexible, career-aligned programs with strong industry connections; scale allows diverse applied tracks."},
+      {name:"CUNY LaGuardia Community College",type:"Urban Community College",why:"Award-winning wraparound support, career services, and transfer pathways; designed to make practical intelligence mobile."}
+    ]},
+  Aspirant:{color:"#dc2626",bg:"#fef2f2",border:"#fca5a5",emoji:"🌱",
+    tagline:"Lower Academic Readiness · Lower Developmental Readiness",
+    desc:"You are not a failure — you are not yet ready. There is a significant difference. Right now, you may be missing some academic foundations, practical life skills, or the emotional scaffolding that college typically demands. This is not a verdict on your potential. With the right environment, structure, and support, real growth is not just possible — it is likely.",
+    strengths:["Often highly resilient from lived experience","Strong motivation once connected to a meaningful goal","Capacity for growth when properly scaffolded","Authenticity and practical wisdom"],
+    risks:["Entering traditional college before foundational supports are in place","Accumulating debt without meaningful credentials","Interpreting institutional mismatch as personal failure","Dropout without the right intervention"],
+    needs:"Foundational stability first: life skills, relational scaffolding, trauma-informed support, and clear short-term wins before complex academic demands.",
+    colleges:[
+      {name:"Community College with Guided Pathways",type:"Open-Access Two-Year College",why:"Best entry point: affordable, accessible, and increasingly designed with structured meta-majors and wraparound support."},
+      {name:"YearUp / Per Scholas",type:"Workforce Development Program",why:"Intensive, employer-connected training in high-demand technical skills; builds capital rapidly with clear economic outcomes."},
+      {name:"AmeriCorps / City Year",type:"Service-Based Development Program",why:"Builds identity, structure, civic engagement, and life skills before college — a genuine capital-building intervention."},
+      {name:"Job Corps",type:"Federally Funded Career Training",why:"Residential program that addresses life readiness and vocational skill simultaneously — foundational and practical."},
+      {name:"Early College High School Programs",type:"Bridge / Concurrent Enrollment",why:"Scaffolded college experience within a supportive high school context builds readiness before full commitment."}
+    ]},
+  RANDO:{color:"#7c3aed",bg:"#faf5ff",border:"#c084fc",emoji:"⚡",
+    tagline:"Atypical · Uncategorizable · Disruptive",
+    desc:"You don't fit the grid — and that may be the most important thing about you. You combine unusual cognitive traits, unconventional thinking, and a powerful internal drive that resists institutional domestication. Traditional academic systems may not serve you well; they may actively constrain you.",
+    strengths:["Radical originality and creative synthesis","Obsessive depth in areas of passion","Resistance to conventional wisdom","Capacity to create entirely new categories","High internal motivation"],
+    risks:["Institutional friction leading to dropout or disengagement","Difficulty translating gifts into conventional credentials","Social isolation from being misunderstood","Self-sabotage when constrained"],
+    needs:"Autonomy, mentors (not professors), real-world tools, and environments that permit — even celebrate — deviation from the norm.",
+    colleges:[
+      {name:"Olin College of Engineering",type:"Project-Based Engineering College",why:"No departments, no traditional grades — students design education around real projects; rewards disruptive thinkers."},
+      {name:"Deep Springs College",type:"Two-Year Radical Liberal Arts",why:"Remote, self-governing, work-based; completely unlike any other institution — designed for extraordinary, unusual minds."},
+      {name:"Minerva University",type:"Global Active Learning University",why:"No lectures, no campus — seminar-based with global rotations; built for unconventional, systems-level thinkers."},
+      {name:"Thiel Fellowship",type:"Fellowship / Non-Traditional Track",why:"Funds students to pursue world-changing projects rather than degrees; the RANDO's native environment."},
+      {name:"Entrepreneurial Incubators (YC, Techstars)",type:"Startup Acceleration Track",why:"For RANDOs with a clear venture obsession: direct access to capital, mentors, and real-world stakes."}
+    ]}
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let iqIdx=0, drIdx=0, iqScore=0, drScore=0, iqLocked=false, drLocked=false;
+let wantsColleges=false;
+let finalType=null;
+
+// ─── CLASSIFICATION ───────────────────────────────────────────────────────────
+function classify(iq,dr){
+  const ip=iq/IQ_Q.length;
+  const dp=dr/(DR_Q.length*4);
+  if(ip>=0.85&&dp<=0.38) return'RANDO';
+  const hiIQ=ip>=0.55, hiDR=dp>=0.58;
+  if(hiIQ&&hiDR) return'Competitor';
+  if(hiIQ&&!hiDR) return'Explorer';
+  if(!hiIQ&&hiDR) return'Pragmatist';
+  return'Aspirant';
+}
+
+// ─── VIEWS ───────────────────────────────────────────────────────────────────
+function showView(id){
+  ['view-intro','view-iq','view-transition','view-dr','view-inst-q','view-results'].forEach(v=>{
+    const el=document.getElementById(v);
+    el.style.display='none';
+    el.classList.remove('fade');
+  });
+  const target=document.getElementById(id);
+  target.style.display=(id==='view-results')?'block':'';
+  setTimeout(()=>target.classList.add('fade'),10);
+}
+
+// ─── IQ ──────────────────────────────────────────────────────────────────────
+function startIQ(){showView('view-iq');renderIQ();}
+function renderIQ(){
+  iqLocked=false;
+  const q=IQ_Q[iqIdx];
+  document.getElementById('iq-counter').textContent=`${iqIdx+1}/20`;
+  document.getElementById('iq-bar').style.width=`${(iqIdx/20)*100}%`;
+  document.getElementById('iq-section').textContent=q.sec;
+  document.getElementById('iq-prompt').textContent=q.prompt;
+  document.getElementById('iq-feedback').textContent='';
+  const cont=document.getElementById('iq-options');
+  cont.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt-btn';
+    b.innerHTML=`<span class="opt-letter">${String.fromCharCode(65+i)}.</span>${opt}`;
+    b.onclick=()=>handleIQ(i,b);
+    cont.appendChild(b);
+  });
+}
+function handleIQ(idx,btn){
+  if(iqLocked)return;
+  iqLocked=true;
+  const q=IQ_Q[iqIdx];
+  const btns=document.getElementById('iq-options').querySelectorAll('.opt-btn');
+  btns[q.ans].classList.add('correct');
+  if(idx===q.ans){iqScore++;document.getElementById('iq-feedback').className='feedback ok';document.getElementById('iq-feedback').textContent='✓ Correct';}
+  else{btn.classList.add('wrong');document.getElementById('iq-feedback').className='feedback bad';document.getElementById('iq-feedback').textContent=`✗ The correct answer is ${String.fromCharCode(65+q.ans)}`;}
+  setTimeout(()=>{
+    iqIdx++;
+    if(iqIdx<IQ_Q.length) renderIQ();
+    else showView('view-transition');
+  },1200);
+}
+
+// ─── DR ──────────────────────────────────────────────────────────────────────
+function startDR(){showView('view-dr');renderDR();}
+function renderDR(){
+  drLocked=false;
+  const q=DR_Q[drIdx];
+  document.getElementById('dr-counter').textContent=`${drIdx+1}/20`;
+  document.getElementById('dr-bar').style.width=`${(drIdx/20)*100}%`;
+  document.getElementById('dr-bar').style.background='#059669';
+  document.getElementById('dr-section').textContent=q.sec;
+  document.getElementById('dr-prompt').textContent=q.prompt;
+  const cont=document.getElementById('dr-options');
+  cont.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt-btn';
+    b.innerHTML=`<span class="opt-letter">${String.fromCharCode(65+i)}.</span>${opt}`;
+    b.onclick=()=>handleDR(i,b);
+    cont.appendChild(b);
+  });
+}
+function handleDR(idx,btn){
+  if(drLocked)return;
+  drLocked=true;
+  btn.classList.add('selected');
+  drScore+=DR_Q[drIdx].w[idx];
+  setTimeout(()=>{
+    drIdx++;
+    if(drIdx<DR_Q.length) renderDR();
+    else {
+      finalType=classify(iqScore,drScore);
+      showView('view-inst-q');
+    }
+  },300);
+}
+
+// ─── INSTITUTION PROMPT ───────────────────────────────────────────────────────
+function goToResults(wantRecs){
+  wantsColleges=wantRecs;
+  buildResults();
+  showView('view-results');
+}
+
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
+function buildResults(){
+  const type=finalType;
+  const p=PROFILES[type];
+  const ip=Math.round((iqScore/IQ_Q.length)*100);
+  const dp=Math.round((drScore/(DR_Q.length*4))*100);
+
+  // Header
+  const hdr=document.getElementById('res-header');
+  hdr.style.background=p.bg;
+  hdr.style.border=`2px solid ${p.border}`;
+  hdr.innerHTML=`
+    <div class="result-emoji">${p.emoji}</div>
+    <div class="result-type" style="color:${p.color}">${type}</div>
+    <div class="result-tagline">${p.tagline}</div>
+    <div class="result-scores">
+      <div class="score-item"><div class="score-val" style="color:${p.color}">${ip}%</div><div class="score-label">Academic Readiness</div></div>
+      <div class="score-divider"></div>
+      <div class="score-item"><div class="score-val" style="color:${p.color}">${dp}%</div><div class="score-label">Dev. Readiness Score</div></div>
+    </div>`;
+
+  // Matrix
+  drawMatrix(type,ip/100,dp/100,p.color);
+
+  // Tabs — conditional on whether colleges requested
+  const tabRow=document.getElementById('res-tab-row');
+  if(wantsColleges){
+    tabRow.innerHTML=`
+      <button id="tab-profile" class="tab-btn active" style="background:${p.color};color:white" onclick="showTab('profile')">📋 Your Profile</button>
+      <button id="tab-colleges" class="tab-btn inactive" onclick="showTab('colleges')">🏛️ College Fit</button>`;
+  } else {
+    tabRow.innerHTML=`
+      <button id="tab-profile" class="tab-btn active" style="background:${p.color};color:white" onclick="showTab('profile')">📋 Your Profile</button>
+      <button class="tab-btn inactive" style="cursor:default;opacity:0.5">🏛️ College Fit (skipped)</button>`;
+  }
+
+  // Profile panel
+  document.getElementById('panel-profile').innerHTML=`
+    <div class="profile-section"><h3>Who You Are Right Now</h3><p>${p.desc}</p></div>
+    <div class="profile-section"><h3>💪 Your Strengths</h3><ul>${p.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    <div class="profile-section"><h3>⚠️ Risks to Watch</h3><ul>${p.risks.map(r=>`<li>${r}</li>`).join('')}</ul></div>
+    <div class="needs-box" style="background:${p.bg};border:1.5px solid ${p.border}"><h3 style="color:${p.color}">🎯 What You Need Most</h3><p style="color:#374151">${p.needs}</p></div>`;
+
+  // Colleges panel
+  if(wantsColleges){
+    document.getElementById('panel-colleges').innerHTML=`
+      <div class="warning-box"><strong>A note on fit:</strong> These recommendations align with your <em>current</em> developmental state — not a permanent verdict. As you grow, your optimal environment may change.</div>
+      ${p.colleges.map(c=>`
+        <div class="college-card">
+          <div class="college-top">
+            <div class="college-name">${c.name}</div>
+            <span class="college-type" style="background:${p.bg};color:${p.color};border-color:${p.border}">${c.type}</span>
+          </div>
+          <p class="college-why">${c.why}</p>
+        </div>`).join('')}`;
+  }
+}
+
+function showTab(tab){
+  const p=PROFILES[finalType];
+  document.getElementById('tab-profile').className='tab-btn '+(tab==='profile'?'active':'inactive');
+  document.getElementById('tab-profile').style.background=tab==='profile'?p.color:'';
+  document.getElementById('tab-profile').style.color=tab==='profile'?'white':'';
+  const tc=document.getElementById('tab-colleges');
+  if(tc){tc.className='tab-btn '+(tab==='colleges'?'active':'inactive');tc.style.background=tab==='colleges'?p.color:'';tc.style.color=tab==='colleges'?'white':'';}
+  document.getElementById('panel-profile').style.display=tab==='profile'?'':'none';
+  document.getElementById('panel-colleges').style.display=tab==='colleges'?'':'none';
+}
+
+function drawMatrix(type,iqPct,drPct,color){
+  const canvas=document.getElementById('matrix-canvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,pad=48;
+  ctx.clearRect(0,0,W,H);
+  const qW=(W-2*pad)/2,qH=(H-2*pad)/2;
+  // Quadrant fills — note Explorer top-left, Competitor top-right
+  const fills=[['#ecfeff','#eef2ff'],['#f0fdf4','#fef2f2']];
+  // Updated label: "Pragmatist" and "Aspirant"
+  const labels=[['Explorer','Competitor'],['Pragmatist','Aspirant']];
+  const lColors=[['#0891b2','#4f46e5'],['#059669','#dc2626']];
+  for(let r=0;r<2;r++) for(let c=0;c<2;c++){
+    ctx.fillStyle=fills[r][c];
+    ctx.fillRect(pad+c*qW,pad+r*qH,qW,qH);
+    ctx.fillStyle=lColors[r][c];
+    ctx.font='bold 11px system-ui,sans-serif';
+    ctx.fillText(labels[r][c],pad+c*qW+8,pad+r*qH+16);
+  }
+  ctx.strokeStyle='#d1d5db';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,H-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();
+  ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(W/2,pad);ctx.lineTo(W/2,H-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,H/2);ctx.lineTo(W-pad,H/2);ctx.stroke();
+  ctx.setLineDash([]);
+  // Axis labels — X axis updated to "Academic Readiness"
+  ctx.fillStyle='#9ca3af';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Academic Readiness →',W/2,H-8);
+  ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Dev. Readiness →',0,0);ctx.restore();
+  // Plot point
+  const px=pad+iqPct*(W-2*pad);
+  const py=(H-pad)-drPct*(H-2*pad);
+  ctx.beginPath();ctx.arc(px,py,14,0,Math.PI*2);
+  ctx.fillStyle=color+'33';ctx.fill();
+  ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);
+  ctx.fillStyle=color;ctx.fill();
+  ctx.font='18px serif';ctx.textAlign='center';
+  ctx.fillText(PROFILES[type].emoji,px,py-18);
+}
+
+function retake(){
+  iqIdx=0;drIdx=0;iqScore=0;drScore=0;
+  finalType=null;wantsColleges=false;
+  showView('view-intro');
+}
+</script>
+</body>
+</html>
